@@ -1,0 +1,44 @@
+comment: Charge les appétences de l'utilisateur connecté dans page.global.coeMaFiche.
+↓CallMoi [ngx.components.UIDynamicAction-1796000007010]: 
+  beanData: |
+    '{
+     "ionBean": "CallSequenceAction",
+     "requestable": "plain:COEsprit_be.Mes_Appetences",
+     "cachePolicy": "plain:none",
+     "cacheTtl": "plain:0"
+    }'
+  ↓Memoriser [ngx.components.UICustomAction-1796000007011]: 
+    actionValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+          →: |
+            '		var stack = props && props.stack;
+            		var out = (stack && stack["1796000007010"] && stack["1796000007010"].out) || (props && props.out);
+            		var root = out && (out.document || out) || {};
+            		var moi = root.moi || null;
+            		if (!root.error && moi) {
+            			var apps = moi.appetences;
+            			if (apps && !Array.isArray(apps)) {
+            				if (Array.isArray(apps.item)) apps = apps.item;
+            				else if (apps.item) apps = [apps.item];
+            				else apps = [];
+            			}
+            			page.global.coeMaFiche = {
+            				user_id: String(moi.user_id || ""),
+            				site: String(moi.site || ""),
+            				appetences: (apps || []).map(function (a) {
+            					if (!a || !a.id) return null;
+            					return {
+            						id: String(a.id),
+            						libelle: String(a.libelle || ""),
+            						domaine_id: String(a.domaine_id || ""),
+            						domaine: String(a.domaine || ""),
+            						tone: String(a.tone || "")
+            					};
+            				}).filter(Boolean)
+            			};
+            			try { if (page.ref) page.ref.detectChanges(); } catch (e) {}
+            		}
+            		resolve(true);
+            '

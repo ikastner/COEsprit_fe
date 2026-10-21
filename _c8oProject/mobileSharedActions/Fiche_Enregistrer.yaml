@@ -1,0 +1,71 @@
+comment: CallSequence Fiche_Enregistrer + toast + maj updatedAt local.
+↓nom_affiche [ngx.components.UIStackVariable-1796000000601]: 
+↓site [ngx.components.UIStackVariable-1796000000602]: 
+↓perimetre [ngx.components.UIStackVariable-1796000000603]: 
+↓libelle_poste [ngx.components.UIStackVariable-1796000000604]: 
+↓activites_principales [ngx.components.UIStackVariable-1796000000605]: 
+↓terme_ids [ngx.components.UIStackVariable-1796000000606]: 
+↓sujets_aide [ngx.components.UIStackVariable-1796000000607]: 
+↓propositions [ngx.components.UIStackVariable-1796000000608]: 
+↓photo_url [ngx.components.UIStackVariable-1796000000609]: 
+↓CallSave [ngx.components.UIDynamicAction-1796000000610]: 
+  beanData: '{"ionBean":"CallSequenceAction","requestable":"plain:COEsprit_be.Fiche_Enregistrer"}'
+  ↓nom_affiche [ngx.components.UIControlVariable-1796000000611]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.nom_affiche || ''
+  ↓site [ngx.components.UIControlVariable-1796000000612]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.site || ''
+  ↓perimetre [ngx.components.UIControlVariable-1796000000613]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.perimetre || ''
+  ↓libelle_poste [ngx.components.UIControlVariable-1796000000614]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.libelle_poste || ''
+  ↓activites_principales [ngx.components.UIControlVariable-1796000000615]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.activites_principales || ''
+  ↓terme_ids [ngx.components.UIControlVariable-1796000000616]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.terme_ids || ''
+  ↓sujets_aide [ngx.components.UIControlVariable-1796000000617]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.sujets_aide || ''
+  ↓propositions [ngx.components.UIControlVariable-1796000000618]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.propositions || '[]'
+  ↓photo_url [ngx.components.UIControlVariable-1796000000619]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.photo_url || ''
+  ↓IfElse [ngx.components.UIDynamicIf-1796000000620]: 
+    beanData: '{"ionBean":"IfElseAction","condition":"script:!!(stack[''1796000000610'']?.out?.error || stack[''1796000000610'']?.out?.document?.error)"}'
+    ↓ToastErr [ngx.components.UIDynamicAction-1796000000621]: 
+      beanData: '{"ionBean":"ToastAction","message":"script:String(stack[''1796000000610'']?.out?.error?.message || stack[''1796000000610'']?.out?.document?.error?.message || ''Enregistrement impossible.'')"}'
+    ↓Else_Handler [ngx.components.UIActionElseEvent-1796000000622]: 
+      ↓ficheUpdatedAt [ngx.components.UIDynamicAction-1796000000623]: 
+        beanData: |
+          '{
+           "ionBean": "SetLocalAction",
+           "Property": "plain:ficheUpdatedAt",
+           "Value": "script:new Date().toISOString()"
+          }'
+      ↓ToastOk [ngx.components.UIDynamicAction-1796000000624]: 
+        beanData: '{"ionBean":"ToastAction","message":"plain:Fiche enregistrée."}'

@@ -1,0 +1,196 @@
+↑isRoot: true
+comment: |
+  'Connexion CO''Esprit via COEsprit_be.Auth_Login.
+  Choix technique : CallSequenceAction sur Auth_Login (pas de pfAppel) ; LoginComponent n''expose que (Connexion) avec event.input
+  {login, password, testRole} — les variables de séquence sont mappées depuis event via UIControlVariable.'
+inAutoMenu: false
+scriptContent: 
+  - xmlizable: 
+    - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+    - com.twinsoft.convertigo.beans.common.FormatedContent: 
+      →: |
+        '/*Begin_c8o_PageImport*/
+        /*End_c8o_PageImport*/
+        /*Begin_c8o_PageDeclaration*/
+        	authHorsSI: boolean;
+        	roleOptions: any;
+        /*End_c8o_PageDeclaration*/
+        /*Begin_c8o_PageConstructor*/
+        		this.authHorsSI = false;
+        		this.roleOptions = ["MEMBRE", "PILOTE", "ADMIN"];
+        /*End_c8o_PageConstructor*/
+        /*Begin_c8o_PageInitialization*/
+        		if (!document.getElementById("pfa-fonts")) {
+        			var fonts = this.c8o.endpointConvertigo + "/projects/COEsprit_fe/DisplayObjects/mobile/assets/fonts/";
+        			var face = function (famille, poids, fichier) {
+        				return ''@font-face { font-family: "'' + famille + ''"; font-style: normal; font-weight: '' + poids + ''; font-display: swap; src: url("'' + fonts + fichier + ''") format("woff2"); }'';
+        			};
+        			var style = document.createElement("style");
+        			style.id = "pfa-fonts";
+        			style.textContent = face("Montserrat", 700, "montserrat-latin-700-normal.woff2") + face("Roboto", 400, "roboto-latin-400-normal.woff2");
+        			document.head.appendChild(style);
+        		}
+        		if (!document.querySelector("link[data-coe-bundle]")) {
+        			var base = this.c8o.endpointConvertigo + "/projects/COEsprit_fe/DisplayObjects/mobile/";
+        			var link = document.createElement("link");
+        			link.rel = "stylesheet";
+        			link.href = base + "assets/css/coe-bundle.css";
+        			link.setAttribute("data-coe-bundle", "1");
+        			document.head.appendChild(link);
+        		}
+        /*End_c8o_PageInitialization*/
+        /*Begin_c8o_PageFunction*/
+        	NavigateRecherche() {
+        		return this.routerProvider.navigateRoot("Recherche", false, null);
+        	}
+        /*End_c8o_PageFunction*/
+        '
+segment: login
+title: Connexion
+↓Content [ngx.components.UIDynamicElement-1796000005100]: 
+  beanData: '{"ionBean":"Content","Padding":"plain:ion-no-padding"}'
+  tagName: ion-content
+  ↓LoginComponent [ngx.components.UIUseShared-1796000005101]: 
+    sharedcomponent: lib_components_ui.Application.NgxApp.LoginComponent
+    ↓appDescription [ngx.components.UIUseVariable-1796000005102]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:Rechercher et consulter les profils de la communauté CO'Esprit DA3C.
+    ↓logoSrc [ngx.components.UIUseVariable-1796000005103]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:../img/logo-urssaf.svg
+    ↓appName [ngx.components.UIUseVariable-1796000005104]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:CO'Esprit
+    ↓illustrationBackground [ngx.components.UIUseVariable-1796000005105]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:'../img/M2A2H@2x.jpg'
+    ↓testMode [ngx.components.UIUseVariable-1796000005106]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.authHorsSI
+    ↓hidePassword [ngx.components.UIUseVariable-1796000005107]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.authHorsSI
+    ↓roleOptions [ngx.components.UIUseVariable-1796000005108]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.roleOptions
+    ↓Event [ngx.components.UIControlEvent-1796000005110]: 
+      attrName: (Connexion)
+      eventName: Connexion
+      ↓CallLogin [ngx.components.UIDynamicAction-1796000005111]: 
+        beanData: '{"ionBean":"CallSequenceAction","requestable":"plain:COEsprit_be.Auth_Login"}'
+        ↓user [ngx.components.UIControlVariable-1796000005112]: 
+          varValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:String(((event && event.input) || {}).login || "").trim()
+        ↓password [ngx.components.UIControlVariable-1796000005113]: 
+          varValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:((event && event.input) || {}).password || ""
+        ↓testRole [ngx.components.UIControlVariable-1796000005114]: 
+          varValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:((event && event.input) || {}).testRole || ""
+        ↓IfElse [ngx.components.UIDynamicIf-1796000005120]: 
+          beanData: '{"ionBean":"IfElseAction","condition":"script:!!(stack[''1796000005111'']?.out?.error || stack[''1796000005111'']?.out?.document?.error)"}'
+          ↓isConnected [ngx.components.UIDynamicAction-1796000005121]: 
+            beanData: |
+              '{
+               "ionBean": "SetGlobalAction",
+               "Property": "plain:isConnected",
+               "Value": "script:false"
+              }'
+          ↓Toast [ngx.components.UIDynamicAction-1796000005122]: 
+            beanData: '{"ionBean":"ToastAction","message":"script:String(stack[''1796000005111'']?.out?.error?.message || stack[''1796000005111'']?.out?.document?.error?.message || ''Connexion refusée.'')"}'
+          ↓Else_Handler [ngx.components.UIActionElseEvent-1796000005123]: 
+            ↓IfElse_User [ngx.components.UIDynamicIf-1796000005130]: 
+              beanData: '{"ionBean":"IfElseAction","condition":"script:(function(o){ var u=o&&(o.user||(o.document&&o.document.user)); return !!(u&&u.codeAgent); })(stack[''1796000005111'']?.out)"}'
+              ↓user [ngx.components.UIDynamicAction-1796000005131]: 
+                beanData: |
+                  '{
+                   "ionBean": "SetGlobalAction",
+                   "Property": "plain:user",
+                   "Value": "script:(function(o){ var u=o&&(o.user||(o.document&&o.document.user)); if(u&&u.role!=null&&!Array.isArray(u.role)) u.role=[u.role]; return u; })(stack[''1796000005111'']?.out)"
+                  }'
+                ↓isConnected [ngx.components.UIDynamicAction-1796000005132]: 
+                  beanData: |
+                    '{
+                     "ionBean": "SetGlobalAction",
+                     "Property": "plain:isConnected",
+                     "Value": "script:true"
+                    }'
+                  ↓NavigateRecherche [ngx.components.UICustomAction-1796000005133]: 
+                    actionValue: 
+                      - xmlizable: 
+                        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                          →: |
+                            		page.NavigateRecherche().then(function () { resolve(); }).catch(function () { resolve(); });
+                            
+              ↓Else_RoleError [ngx.components.UIActionElseEvent-1796000005134]: 
+                ↓isConnected [ngx.components.UIDynamicAction-1796000005135]: 
+                  beanData: |
+                    '{
+                     "ionBean": "SetGlobalAction",
+                     "Property": "plain:isConnected",
+                     "Value": "script:false"
+                    }'
+                ↓ToastRoleError [ngx.components.UIDynamicAction-1796000005136]: 
+                  beanData: '{"ionBean":"ToastAction","message":"plain:Vous n''êtes pas autorisé à accéder à cette application."}'
+↓PageEvent [ngx.components.UIPageEvent-1796000005140]: 
+  ↓ResetSessionOnLogin [ngx.components.UICustomAction-1796000005141]: 
+    actionValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+          →: |
+            '		page.c8o.log.debug("[MB] Login PageEvent: resetting session data");
+            		resolve(true);
+            '
+    ↓InvokeReset [ngx.components.UIDynamicInvoke-1796000005142]: 
+      beanData: '{"ionBean":"InvokeAction"}'
+      stack: COEsprit_fe.Application.NgxApp.Auth_ResetSession
+  ↓CallAuthHorsSI [ngx.components.UIDynamicAction-1796000005143]: 
+    beanData: '{"ionBean":"CallSequenceAction","requestable":"plain:COEsprit_be.Get_Auth_Hors_SI"}'
+    ↓ApplyAuthHorsSI [ngx.components.UICustomAction-1796000005144]: 
+      actionValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+          - com.twinsoft.convertigo.beans.common.FormatedContent: 
+            →: |
+              '		var stack = props && props.stack;
+              		var res = (stack && stack["1796000005143"] && stack["1796000005143"].out) || event;
+              		var d = res && (res.document || res);
+              		var data = d && d.data ? d.data : d;
+              		var v = data && data.authHorsSI;
+              		page.authHorsSI = v === true || v === "true" || v === 1 || v === "1";
+              		resolve(true);
+              '
+↓PageStyle [ngx.components.UIStyle-1796000005150]: 
+  styleContent: 
+    - xmlizable: 
+      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+        →: |
+          '.login-page .main-title,
+          .login-page .subtitle,
+          .login-page .welcome-section h2 {
+            font-family: Montserrat, "Segoe UI", system-ui, sans-serif !important;
+          }
+          '

@@ -4,7 +4,18 @@
   contextTimeout: 59
   corsOrigin: =Origin
   httpSessionTimeout: 60
+  version: 0.1.0
   ↓void [connectors.SqlConnector]: 🗏 connectors/void.yaml
+  ↓get_version [sequences.GenericSequence]: 🗏 sequences/get_version.yaml
+  ↓COEsprit_be_reference [references.ProjectSchemaReference]: 
+    comment: Backend CO Esprit
+    projectName: COEsprit_be
+  ↓lib_common_be_reference [references.ProjectSchemaReference]: 
+    projectName: lib_common_be
+  ↓lib_common_fe_reference [references.ProjectSchemaReference]: 
+    projectName: lib_common_fe
+  ↓lib_components_ui_reference [references.ProjectSchemaReference]: 
+    projectName: lib_components_ui
   ↓project1 [references.ProjectSchemaReference]: 
     projectName: mobilebuilder_tpl_8_4_0_ngx=https://github.com/convertigo/c8oprj-mobilebuilder-tpl/archive/mobilebuilder_tpl_8_4_0_ngx.zip
   ↓Application [core.MobileApplication]: 

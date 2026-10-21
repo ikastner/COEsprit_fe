@@ -1,0 +1,22 @@
+comment: Lit une fiche via COEsprit_be.Fiche_Lire (userId optionnel).
+↓userId [ngx.components.UIStackVariable-1796000004001]: 
+↓CallFiche [ngx.components.UIDynamicAction-1796000004010]: 
+  beanData: |
+    '{
+     "ionBean": "CallSequenceAction",
+     "requestable": "plain:COEsprit_be.Fiche_Lire",
+     "cachePolicy": "plain:none",
+     "cacheTtl": "plain:0"
+    }'
+  ↓userId [ngx.components.UIControlVariable-1796000004011]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.userId || ''
+  ↓fiche [ngx.components.UIDynamicAction-1796000004012]: 
+    beanData: |
+      '{
+       "ionBean": "SetLocalAction",
+       "Property": "plain:fiche",
+       "Value": "script:(function(o){ function rows(x){ if(!x) return null; if(Array.isArray(x)) return x; if(x.row!=null){ var r=x.row; return Array.isArray(r)?r:[r]; } if(typeof x===''object''){ var keys=Object.keys(x).filter(function(k){return \/^\\d+$\/.test(k);}); if(keys.length) return keys.sort(function(a,b){return (+a)-(+b);}).map(function(k){return x[k];}); } return null; } function sqlRows(node){ if(!node||typeof node!==''object'') return null; return rows(node.sql_output)||rows(node.document&&node.document.sql_output)||null; } function isFiche(r){ return !!(r&&typeof r===''object''&&(r.user_id!=null||r.userId!=null||r.nom_affiche!=null||r.nomAffiche!=null)&&!r.sql_output&&!r.document&&!r.transaction); } function walk(node, depth){ if(!node||depth>10) return null; if(Array.isArray(node)){ for(var i=0;i<node.length;i++){ var f=walk(node[i], depth+1); if(f) return f; } return null; } if(typeof node!==''object'') return null; var n=sqlRows(node); if(n&&n.length&&isFiche(n[0])) return n[0]; var keys=Object.keys(node); for(var j=0;j<keys.length;j++){ var k=keys[j]; if(k===''error''||k===''stacktrace''||k===''attr'') continue; var f2=walk(node[k], depth+1); if(f2) return f2; } return null; } var root=o&&(o.document||o); var fiche: any = {}; if(root&&!root.error){ if(root.fiche&&typeof root.fiche===''object''&&!Array.isArray(root.fiche)) fiche=root.fiche; else { var named=root.Lire||root.lire||root.T_Fiche_Lire; var n=named&&(sqlRows(named)||sqlRows(named.document)); if(n&&n.length&&isFiche(n[0])) fiche=n[0]; else fiche=walk(root, 0)||{}; } } try { var u=page.global&&page.global.user; var code=u&&(u.codeAgent||''''); if(fiche&&code&&String(fiche.user_id||'''').toLowerCase()===String(code).toLowerCase()) page.global.coeMaFiche=fiche; } catch(e) {} try{page.loading=false;}catch(eL){} try{ var nom=String((fiche&&(fiche.nom_affiche||fiche.nomAffiche))||'''').trim(); var photo=String((fiche&&(fiche.photo_url||fiche.photoUrl))||'''').trim(); var me=page.global&&page.global.user; var codeMoi=String((me&&(me.codeAgent||me.cle))||'''').toLowerCase(); if(me&&fiche&&codeMoi&&String(fiche.user_id||fiche.userId||'''').toLowerCase()===codeMoi){ if(nom){ me.displayName=nom; me.nom=nom; page.pfaUserName=nom; } if(photo){ var id=page.global&&page.global.coeIdentite; if(id&&id.photo&&id.photoAt&&(Date.now()-id.photoAt)<20000&&id.photo!==photo){ photo=id.photo; if(fiche) fiche.photo_url=photo; } me.photo=photo; page.pfaUserPhoto=photo; if(page.global){ if(!page.global.coeIdentite) page.global.coeIdentite={}; page.global.coeIdentite.photo=photo; page.global.coeIdentite.charge=true; } } var side=page.coeSidebar||page.coesprit_fe_pfasidebar; if(side){ if(nom) side.userName=nom; if(photo) side.photoUrl=photo; try{side.ref.detectChanges();}catch(eS){} } } }catch(eId){} return fiche; })(stack[''1796000004010'']&&stack[''1796000004010''].out)"
+      }'

@@ -1,0 +1,46 @@
+comment: Enregistre uniquement le base64 de la photo, sans toucher aux appétences.
+↓photo_url [ngx.components.UIStackVariable-1796000000701]: 
+↓CallPhoto [ngx.components.UIDynamicAction-1796000000710]: 
+  beanData: |
+    '{
+     "ionBean": "CallSequenceAction",
+     "requestable": "plain:COEsprit_be.Fiche_Enregistrer",
+     "cachePolicy": "plain:none",
+     "cacheTtl": "plain:0"
+    }'
+  ↓photo_url [ngx.components.UIControlVariable-1796000000711]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.photo_url || ''
+  ↓seulement_photo [ngx.components.UIControlVariable-1796000000712]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: plain:true
+  ↓IfElse [ngx.components.UIDynamicIf-1796000000720]: 
+    beanData: '{"ionBean":"IfElseAction","condition":"script:!!(stack[''1796000000710'']?.out?.error || stack[''1796000000710'']?.out?.document?.error)"}'
+    ↓ToastErr [ngx.components.UIDynamicAction-1796000000721]: 
+      beanData: '{"ionBean":"ToastAction","message":"script:String(stack[''1796000000710'']?.out?.error?.message || stack[''1796000000710'']?.out?.document?.error?.message || ''Photo non enregistrée.'')"}'
+    ↓Else_Handler [ngx.components.UIActionElseEvent-1796000000722]: 
+      ↓MajSide [ngx.components.UICustomAction-1796000000723]: 
+        actionValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+            - com.twinsoft.convertigo.beans.common.FormatedContent: 
+              →: |
+                'try {
+                  var photo = String((vars && vars.photo_url) || "");
+                  if (photo && page.global && page.global.user) page.global.user.photo = photo;
+                  if (photo && page.global) {
+                    if (!page.global.coeIdentite) page.global.coeIdentite = {};
+                    page.global.coeIdentite.photo = photo;
+                    page.global.coeIdentite.charge = true;
+                  }
+                  if (photo) (page as any).pfaUserPhoto = photo;
+                  var side: any = (page as any).coeSidebar || (page as any).coesprit_fe_pfasidebar;
+                  if (side && photo) { side.photoUrl = photo; try { side.ref.detectChanges(); } catch (eS) {} }
+                } catch (eP) {}
+                resolve(true);'
+      ↓ToastOk [ngx.components.UIDynamicAction-1796000000724]: 
+        beanData: '{"ionBean":"ToastAction","message":"plain:Photo de profil mise à jour"}'

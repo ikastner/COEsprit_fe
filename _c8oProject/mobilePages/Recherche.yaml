@@ -1,0 +1,1708 @@
+scriptContent: 
+  - xmlizable: 
+    - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+    - com.twinsoft.convertigo.beans.common.FormatedContent: 
+      →: |
+        '/*Begin_c8o_PageImport*/
+        /*End_c8o_PageImport*/
+        /*Begin_c8o_PageDeclaration*/
+        	view: string;
+        	pfaUserName: string;
+        	pfaUserRole: string;
+        	loading: boolean;
+        	barrePrete: boolean;
+        /*End_c8o_PageDeclaration*/
+        /*Begin_c8o_PageConstructor*/
+        		this.view = "recherche";
+        		this.pfaUserName = "";
+        		this.pfaUserRole = "";
+        		try {
+        			var g0: any = this.global || {};
+        			var c0 = g0.coeIdentite || {};
+        			var u0 = g0.user || {};
+        			var nom0 = String(c0.nom || u0.displayName || u0.nom || "").trim();
+        			var role0 = String(c0.role || "").trim();
+        			if (!role0 && u0.role) role0 = Array.isArray(u0.role) ? u0.role.join(", ") : String(u0.role || "");
+        			if (nom0) this.pfaUserName = nom0;
+        			if (role0) this.pfaUserRole = role0;
+        		} catch (eId) {}
+        		this.loading = true;
+        		this.barrePrete = false;
+        /*End_c8o_PageConstructor*/
+        /*Begin_c8o_PageInitialization*/
+        		/*End_c8o_PageInitialization*/
+        /*Begin_c8o_PageAfterViewInit*/
+        		/*End_c8o_PageAfterViewInit*/
+        /*Begin_c8o_PageFinalization*/
+        		/*End_c8o_PageFinalization*/
+        /*Begin_c8o_PageFunction*/
+        	syncUserFromGlobal() {
+        		var u = this.global && this.global.user;
+        		if (!u) return;
+        		this.pfaUserName = String(u.displayName || u.nom || u.codeAgent || "");
+        		var roles = u.role;
+        		this.pfaUserRole = Array.isArray(roles) ? roles.join(", ") : String(roles || "");
+        	}
+        	navSidebar(event) {
+        		var code = event;
+        		if (code && code.route) code = code.route;
+        		if (code && code.detail != null) code = code.detail;
+        		code = String(code || "");
+        		if (code.indexOf("logout") >= 0) { this.deconnecter(); return; }
+        		if (code === "recherche") return;
+        		if (code === "ma-fiche") this.routerProvider.navigateRoot("MaFiche", false, null);
+        		if (code === "profil") this.routerProvider.navigateRoot("Profil", false, null);
+        		if (code === "admin") this.routerProvider.navigateRoot("Admin", false, null);
+        		if (code === "pilote") this.routerProvider.navigateRoot("Pilote", false, null);
+        	}
+        	deconnecter() {
+        		try { window.sessionStorage.removeItem("coe:userName"); window.sessionStorage.removeItem("coe:userRole"); } catch (e) {}
+        		var so = this.routerProvider && this.routerProvider.sharedObject;
+        		if (so) { so.user = null; so.coeIdentite = null; so.isConnected = false; }
+        		if (this.global) { this.global.user = null; this.global.coeIdentite = null; }
+        		this.routerProvider.navigateRoot("Login", false, null);
+        	}
+        	
+        	libelleResultat(row) {
+        		if (!row) return "";
+        		return String(row.nom_affiche || row.nom || row.displayName || row.user_id || row.cle || "");
+        	}
+        	countN() {
+        		return (this.local.results || []).length;
+        	}
+        	countSuffix() {
+        		var n = this.countN();
+        		var s = n > 1 ? "s" : "";
+        		return " profil" + s + " trouvé" + s;
+        	}
+        	valeurSelect(event) {
+        		if (event && event.target && event.target.value !== undefined) return event.target.value;
+        		if (event && event.detail && event.detail.value !== undefined) return event.detail.value;
+        		if (event && event.event && event.event.value !== undefined) return event.event.value;
+        		if (event && event.value !== undefined && !event.target) return event.value;
+        		return event == null ? "" : event;
+        	}
+        	siteOpts() {
+        		var opts = this.valeursListe("site");
+        		if (opts.length) return opts;
+        		return [
+        			{ value: "Paris", label: "Paris" },
+        			{ value: "Lyon", label: "Lyon" },
+        			{ value: "Bordeaux", label: "Bordeaux" },
+        			{ value: "Toulouse", label: "Toulouse" }
+        		];
+        	}
+        	valeursListe(nom) {
+        		var rows = (this.local.listes && this.local.listes.length) ? this.local.listes : (this.global.coeListes || []);
+        		return (rows || []).filter(function (r) {
+        			return r && String(r.liste) === nom && String(r.valeur || "").trim();
+        		}).map(function (r) {
+        			return { value: String(r.valeur), label: String(r.valeur) };
+        		});
+        	}
+        	posteOpts() {
+        		return this.valeursListe("poste");
+        	}
+        	entiteOpts() {
+        		return this.valeursListe("entite");
+        	}
+        	communauteLabel() {
+        		var rows = this.local.results || [];
+        		var f = rows[0] || this.local.fiche || {};
+        		return String(f.communaute || "");
+        	}
+        	termeOpts() {
+        		var raw = (this.local.termes && this.local.termes.length) ? this.local.termes : (this.global.coeTermes || []);
+        		var all = (raw || []).filter(function (t) {
+        			if (!t || typeof t !== "object") return false;
+        			if (t.tone != null && t.terme_id == null && t.statut == null) return false;
+        			return t.terme_id != null || t.termeId != null || t.statut != null || (t.id != null && t.libelle != null && t.domaine_id != null);
+        		});
+        		var d = this.local.domaine_id || "";
+        		var list = !d ? all : all.filter(function (t) {
+        			return String(t.domaine_id || t.domaineId || "") === String(d);
+        		});
+        		return (list || []).map(function (t) {
+        			return { value: String(t.terme_id || t.termeId || t.id || ""), label: String(t.libelle || t.label || t.id || "") };
+        		}).filter(function (o) { return o.value; });
+        	}
+        	besoinOpts() {
+        		var raw = (this.local.termes && this.local.termes.length) ? this.local.termes : (this.global.coeTermes || []);
+        		var all = (raw || []).filter(function (t) {
+        			if (!t || typeof t !== "object") return false;
+        			if (t.tone != null && t.terme_id == null && t.statut == null) return false;
+        			return t.terme_id != null || t.termeId != null || t.statut != null || (t.id != null && t.libelle != null);
+        		});
+        		return (all || []).map(function (t) {
+        			var lib = String(t.libelle || t.label || t.id || "");
+        			var id = String(t.terme_id || t.termeId || t.id || "");
+        			return { display: lib, value: id || lib, search: lib + " " + id };
+        		}).filter(function (o) { return o.display; }).sort(function (a, b) {
+        			return String(a.display).localeCompare(String(b.display), "fr");
+        		});
+        	}
+        	setBesoin(event) {
+        		var v = event && event.target ? event.target.value : event;
+        		this.local.q = v == null ? "" : String(v);
+        	}
+        	joinFiltre(v) {
+        		var list = [];
+        		if (Array.isArray(v)) list = v;
+        		else if (v != null && String(v).trim()) list = String(v).split("|");
+        		return list.map(function (x) {
+        			return String(x == null ? "" : x).split("''").join("").split("|").join("").split(";").join("").trim();
+        		}).filter(Boolean).join("|");
+        	}
+        	valeursMulti(event) {
+        		var v = this.valeurSelect(event);
+        		if (Array.isArray(v)) return v.map(function (x) { return String(x); }).filter(Boolean);
+        		if (v == null || v === "") return [];
+        		return [String(v)];
+        	}
+        	setSite(event) {
+        		this.local.site = this.valeursMulti(event);
+        	}
+        	setPoste(event) {
+        		this.local.libelle_poste = this.valeursMulti(event);
+        	}
+        	setEntite(event) {
+        		this.local.entite = this.valeursMulti(event);
+        	}
+        	setTerme(event) {
+        		this.local.terme_id = this.valeursMulti(event);
+        	}
+        	libelleDomaine(d) {
+        		if (!d) return "";
+        		return String(d.libelle || d.label || d.nom || "");
+        	}
+        	domaineChipClass(d) {
+        		var tone = (d && d.tone) || "sky";
+        		var active = this.local.domaine_id && String(this.local.domaine_id) === String((d && (d.id || d.domaine_id)) || "");
+        		return "aide-chip aide-chip--" + tone + (active ? " is-active" : "");
+        	}
+        	toggleDomaine(d) {
+        		var id = d && (d.id || d.domaine_id || d);
+        		if (!id) return;
+        		this.local.domaine_id = (String(this.local.domaine_id || "") === String(id)) ? "" : String(id);
+        		if (this.local.domaine_id && Array.isArray(this.local.terme_id) && this.local.terme_id.length) {
+        			var termes = (this.local.termes && this.local.termes.length) ? this.local.termes : (this.global.coeTermes || []);
+        			var keep = {};
+        			(termes || []).forEach(function (x) {
+        				if (String(x.domaine_id || x.domaineId || "") === String(this.local.domaine_id)) {
+        					keep[String(x.id || x.terme_id || "")] = true;
+        				}
+        			}.bind(this));
+        			this.local.terme_id = this.local.terme_id.filter(function (id) { return keep[String(id)]; });
+        		}
+        	}
+        	resetFiltres() {
+        		this.local.q = "";
+        		this.local.recherche = [];
+        		this.local.site = [];
+        		this.local.libelle_poste = [];
+        		this.local.entite = [];
+        		this.local.domaine_id = "";
+        		this.local.terme_id = [];
+        		try { this.ref.detectChanges(); } catch (e) {}
+        	}
+        	barreEnChargement() {
+        		return !!this.loading && !this.barrePrete;
+        	}
+        /*End_c8o_PageFunction*/
+        '
+segment: recherche
+title: Recherche
+↓PfaSidebarUse [ngx.components.UIUseShared-17960000052009]: 
+  identifier: coeSidebar
+  sharedcomponent: COEsprit_fe.Application.NgxApp.PfaSidebar
+  ↓active [ngx.components.UIUseVariable-1796000005201]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:this.view
+  ↓userName [ngx.components.UIUseVariable-1796000005202]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:this.pfaUserName
+  ↓userRole [ngx.components.UIUseVariable-1796000005203]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:this.pfaUserRole
+  ↓navigate [ngx.components.UIControlEvent-1796000005204]: 
+    attrName: (navigate)
+    eventName: navigate
+    ↓navigateDo [ngx.components.UICustomAction-1796000005205]: 
+      actionValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+          - com.twinsoft.convertigo.beans.common.FormatedContent: 
+            →: |
+              page.navSidebar(event);
+              resolve(true);
+              
+↓Content [ngx.components.UIDynamicElement-1796000005210]: 
+  beanData: '{"ionBean":"Content"}'
+  tagName: ion-content
+  ↓ContentClass [ngx.components.UIAttribute-17960000052109]: 
+    attrName: class
+    attrValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: plain:coe-page
+  ↓Shell [ngx.components.UIDynamicElement-1796000005211]: 
+    beanData: '{"ionBean":"DivTag"}'
+    tagName: div
+    ↓ShellC [ngx.components.UIAttribute-1796000005212]: 
+      attrName: class
+      attrValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:search-shell
+    ↓Topbar [ngx.components.UIDynamicElement-1796000005213]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: header
+      ↓TopbarC [ngx.components.UIAttribute-1796000005214]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:topbar
+      ↓TopTitles [ngx.components.UIDynamicElement-17960000052130]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓TopTitle [ngx.components.UIDynamicElement-1796000005215]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: h1
+          ↓TopTitleC [ngx.components.UIAttribute-1796000005216]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:topbar__title
+          ↓TopTitleT [ngx.components.UIText-1796000005217]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Recherche
+        ↓TopSub [ngx.components.UIDynamicElement-1796000005218]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: p
+          ↓TopSubC [ngx.components.UIAttribute-1796000005219]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:topbar__subtitle
+          ↓TopSubT [ngx.components.UIText-17960000052191]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:this.communauteLabel()
+    ↓IfBarSkel [ngx.components.UIControlDirective-17960000056000]: 
+      directiveName: If
+      directiveSource: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.barreEnChargement()
+      ↓BarSkel [ngx.components.UIDynamicElement-17960000056001]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: section
+        ↓BarSkelC [ngx.components.UIAttribute-17960000056002]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:search-bar skel-bar
+        ↓BarTop [ngx.components.UIDynamicElement-17960000056010]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓BarTopC [ngx.components.UIAttribute-17960000056011]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel-bar__top
+          ↓BarIn [ngx.components.UIDynamicElement-17960000056012]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarInC [ngx.components.UIAttribute-17960000056013]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+          ↓BarBtn [ngx.components.UIDynamicElement-17960000056014]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarBtnC [ngx.components.UIAttribute-17960000056015]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel skel--btn
+        ↓BarChips [ngx.components.UIDynamicElement-17960000056020]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓BarChipsC [ngx.components.UIAttribute-17960000056021]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel-bar__chips
+          ↓BarC0 [ngx.components.UIDynamicElement-17960000056022]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarC0C [ngx.components.UIAttribute-17960000056023]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+          ↓BarC1 [ngx.components.UIDynamicElement-17960000056024]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarC1C [ngx.components.UIAttribute-17960000056025]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+          ↓BarC2 [ngx.components.UIDynamicElement-17960000056026]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarC2C [ngx.components.UIAttribute-17960000056027]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+          ↓BarC3 [ngx.components.UIDynamicElement-17960000056028]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarC3C [ngx.components.UIAttribute-17960000056029]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+        ↓BarFilters [ngx.components.UIDynamicElement-17960000056030]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓BarFiltersC [ngx.components.UIAttribute-17960000056031]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel-bar__filters
+          ↓BarF0 [ngx.components.UIDynamicElement-17960000056032]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarF0C [ngx.components.UIAttribute-17960000056033]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+          ↓BarF1 [ngx.components.UIDynamicElement-17960000056034]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarF1C [ngx.components.UIAttribute-17960000056035]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+          ↓BarF2 [ngx.components.UIDynamicElement-17960000056036]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarF2C [ngx.components.UIAttribute-17960000056037]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+          ↓BarF3 [ngx.components.UIDynamicElement-17960000056038]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: div
+            ↓BarF3C [ngx.components.UIAttribute-17960000056039]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:skel
+    ↓SearchBar [ngx.components.UIDynamicElement-1796000005220]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: section
+      ↓SearchBarH [ngx.components.UIAttribute-17960000052205]: 
+        attrName: '[hidden]'
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:this.barreEnChargement()
+      ↓SearchBarC [ngx.components.UIAttribute-1796000005221]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:search-bar
+      ↓Main [ngx.components.UIDynamicElement-1796000005222]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓MainC [ngx.components.UIAttribute-1796000005223]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:search-bar__main toolbar
+        ↓Search [ngx.components.UIDynamicElement-17960000052240]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓SearchC [ngx.components.UIAttribute-17960000052241]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:search
+          ↓FieldQ [ngx.components.UIDynamicElement-17960000052242]: 
+            beanData: '{"ionBean":"DivTag"}'
+            tagName: label
+            ↓FieldQC [ngx.components.UIAttribute-17960000052243]: 
+              attrName: class
+              attrValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                  - MobileSmartSourceType: plain:field
+            ↓LblQ [ngx.components.UIDynamicElement-17960000052244]: 
+              beanData: '{"ionBean":"DivTag"}'
+              tagName: span
+              ↓LblQC [ngx.components.UIAttribute-17960000052245]: 
+                attrName: class
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:field__label
+              ↓LblQT [ngx.components.UIText-17960000052246]: 
+                textValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:Recherche
+            ↓InQ [ngx.components.UIDynamicElement-17960000052247]: 
+              beanData: '{"ionBean":"DivTag"}'
+              selfClose: true
+              tagName: input
+              ↓InQC [ngx.components.UIAttribute-17960000052248]: 
+                attrName: class
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:input
+              ↓InQT [ngx.components.UIAttribute-17960000052249]: 
+                attrName: type
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:search
+              ↓InQP [ngx.components.UIAttribute-17960000052250]: 
+                attrName: placeholder
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:Rechercher…
+              ↓InQV [ngx.components.UIAttribute-17960000052251]: 
+                attrName: '[value]'
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: script:this.local.q
+              ↓InQE [ngx.components.UIControlEvent-17960000052259]: 
+                attrName: (input)
+                eventName: onInput
+                ↓DoQ [ngx.components.UICustomAction-17960000052260]: 
+                  actionValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                        →: |
+                          		try { page.setBesoin(event); } catch (e) { console.error(e); }
+                          		resolve(true);
+                          
+                  ↓InvokeSel [ngx.components.UIDynamicInvoke-17960000052253]: 
+                    beanData: '{"ionBean":"InvokeAction"}'
+                    stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+                    ↓q [ngx.components.UIControlVariable-17960000052254]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.local.q || ('')
+                    ↓site [ngx.components.UIControlVariable-17960000052255]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+                    ↓perimetre [ngx.components.UIControlVariable-17960000052256]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.local.perimetre || ('')
+                    ↓domaine_id [ngx.components.UIControlVariable-17960000052257]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.local.domaine_id || ('')
+                    ↓terme_id [ngx.components.UIControlVariable-17960000052258]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)
+        ↓BtnReset [ngx.components.UIDynamicElement-1796000005232]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: button
+          ↓BtnResetType [ngx.components.UIAttribute-17960000052321]: 
+            attrName: type
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:button
+          ↓BtnResetC [ngx.components.UIAttribute-1796000005233]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:btn btn--ghost
+          ↓BtnResetE [ngx.components.UIControlEvent-1796000005234]: 
+            ↓ResetDo [ngx.components.UICustomAction-1796000005235]: 
+              actionValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                  - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                    →: |
+                      		page.resetFiltres();
+                      		resolve(true);
+                      
+              ↓InvokeReset [ngx.components.UIDynamicInvoke-17960000052351]: 
+                beanData: '{"ionBean":"InvokeAction"}'
+                stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+                ↓q [ngx.components.UIControlVariable-17960000052352]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.local.q || ('')
+                ↓site [ngx.components.UIControlVariable-17960000052353]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+                ↓perimetre [ngx.components.UIControlVariable-17960000052354]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.local.perimetre || ('')
+                ↓domaine_id [ngx.components.UIControlVariable-17960000052355]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.local.domaine_id || ('')
+                ↓terme_id [ngx.components.UIControlVariable-17960000052356]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)
+          ↓BtnResetT [ngx.components.UIText-1796000005236]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Réinitialiser
+      ↓Domaines [ngx.components.UIDynamicElement-17960000052370]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓DomainesC [ngx.components.UIAttribute-17960000052371]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:search-bar__domaines
+        ↓DomLbl [ngx.components.UIDynamicElement-17960000052372]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: span
+          ↓DomLblC [ngx.components.UIAttribute-17960000052373]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:field__label
+          ↓DomLblT [ngx.components.UIText-17960000052374]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Par domaine
+        ↓ChipRow [ngx.components.UIDynamicElement-17960000052375]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓ChipRowC [ngx.components.UIAttribute-17960000052376]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:chip-row
+          ↓RepeatDom [ngx.components.UIControlDirective-17960000052377]: 
+            directiveSource: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: 'script:(this.local.domaines && this.local.domaines.length ? this.local.domaines : (this.global.coeDomaines || []))'
+            ↓DomBtn [ngx.components.UIDynamicElement-17960000052378]: 
+              beanData: '{"ionBean":"DivTag"}'
+              tagName: span
+              ↓DomBtnC [ngx.components.UIAttribute-17960000052380]: 
+                attrName: '[class]'
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: script:this.domaineChipClass(item17960000052377)
+              ↓DomBtnE [ngx.components.UIControlEvent-17960000052381]: 
+                ↓ToggleDom [ngx.components.UICustomAction-17960000052382]: 
+                  actionValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                        →: |
+                          '		var scope = props && props.stack && props.stack.root && props.stack.root.scope;
+                          		var item = scope && scope.item17960000052377;
+                          		var id = (item && (item.id || item.domaine_id)) || "";
+                          		if (!id) {
+                          			var el = event && (event.currentTarget || event.target);
+                          			while (el && el.getAttribute && !el.getAttribute("data-id") && el.parentElement) el = el.parentElement;
+                          			id = (el && el.getAttribute && el.getAttribute("data-id")) || "";
+                          		}
+                          		page.toggleDomaine({ id: id });
+                          		resolve(true);
+                          '
+                  ↓InvokeDom [ngx.components.UIDynamicInvoke-17960000052383]: 
+                    beanData: '{"ionBean":"InvokeAction"}'
+                    stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+                    ↓q [ngx.components.UIControlVariable-17960000052384]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.local.q || ('')
+                    ↓site [ngx.components.UIControlVariable-17960000052385]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+                    ↓perimetre [ngx.components.UIControlVariable-17960000052386]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.local.perimetre || ('')
+                    ↓domaine_id [ngx.components.UIControlVariable-17960000052387]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.local.domaine_id || ('')
+                    ↓terme_id [ngx.components.UIControlVariable-17960000052388]: 
+                      varValue: 
+                        - xmlizable: 
+                          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                          - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)
+              ↓DomBtnT [ngx.components.UIText-17960000052389]: 
+                textValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: script:this.libelleDomaine(item17960000052377)
+      ↓Filters [ngx.components.UIDynamicElement-1796000005240]: 
+        beanData: '{"ionBean":"Grid"}'
+        tagName: ion-grid
+        ↓FiltersC [ngx.components.UIAttribute-1796000005241]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:c8o-grid search-bar__filters
+        ↓Row [ngx.components.UIDynamicElement-1796000005242]: 
+          beanData: '{"ionBean":"GridRow"}'
+          tagName: ion-row
+          ↓RowC [ngx.components.UIAttribute-1796000005243]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:c8o-grid__row c8o-grid__row--gap-sm
+          ↓ColSite [ngx.components.UIDynamicElement-17960000054000]: 
+            beanData: |
+              '{
+               "ionBean": "GridCol",
+               "Size": "plain:12",
+               "SizeLg": "plain:3",
+               "SizeMd": "plain:6"
+              }'
+            tagName: ion-col
+            ↓FieldSite [ngx.components.UIDynamicElement-17960000054001]: 
+              beanData: '{"ionBean":"DivTag"}'
+              tagName: label
+              ↓FieldSiteC [ngx.components.UIAttribute-17960000054002]: 
+                attrName: class
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:field
+              ↓LblSite [ngx.components.UIDynamicElement-17960000054003]: 
+                beanData: '{"ionBean":"DivTag"}'
+                tagName: span
+                ↓LblSiteC [ngx.components.UIAttribute-17960000054004]: 
+                  attrName: class
+                  attrValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:field__label
+                ↓LblSiteT [ngx.components.UIText-17960000054005]: 
+                  textValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:Site
+              ↓PickSite [ngx.components.UIUseShared-17960000054006]: 
+                sharedcomponent: lib_components_ui.Application.NgxApp.p_multiselect
+                ↓options [ngx.components.UIUseVariable-17960000054007]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.siteOpts()
+                ↓optionLabel [ngx.components.UIUseVariable-17960000054008]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'label'
+                ↓optionValue [ngx.components.UIUseVariable-179600000540091]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'value'
+                ↓value [ngx.components.UIUseVariable-17960000054010]: 
+                  binding: twoWayBinding
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.local.site
+                ↓placeholder [ngx.components.UIUseVariable-17960000054011]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Tous les sites'
+                ↓filter [ngx.components.UIUseVariable-17960000054012]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:true
+                ↓filterPlaceholder [ngx.components.UIUseVariable-179600000540121]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Rechercher'
+                ↓showClear [ngx.components.UIUseVariable-17960000054013]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:false
+                ↓scrollHeight [ngx.components.UIUseVariable-17960000054014]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'240px'
+                ↓display [ngx.components.UIUseVariable-17960000054030]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'chip'
+                ↓maxSelectedLabels [ngx.components.UIUseVariable-17960000054031]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:2
+                ↓onChange [ngx.components.UIControlEvent-17960000054015]: 
+                  attrName: (onChange)
+                  eventName: onChange
+                  ↓SetSite [ngx.components.UICustomAction-17960000054016]: 
+                    actionValue: 
+                      - xmlizable: 
+                        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                          →: |
+                            		try { page.setSite(event); } catch (e) { console.error(e); }
+                            		resolve(true);
+                            
+                    ↓InvokeSite [ngx.components.UIDynamicInvoke-17960000054017]: 
+                      beanData: '{"ionBean":"InvokeAction"}'
+                      stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+                      ↓q [ngx.components.UIControlVariable-17960000054018]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.q || ('')
+                      ↓site [ngx.components.UIControlVariable-17960000054019]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+                      ↓perimetre [ngx.components.UIControlVariable-17960000054020]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.perimetre || ('')
+                      ↓domaine_id [ngx.components.UIControlVariable-17960000054021]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.domaine_id || ('')
+                      ↓terme_id [ngx.components.UIControlVariable-17960000054022]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)
+          ↓ColPer [ngx.components.UIDynamicElement-17960000054100]: 
+            beanData: |
+              '{
+               "ionBean": "GridCol",
+               "Size": "plain:12",
+               "SizeLg": "plain:3",
+               "SizeMd": "plain:6"
+              }'
+            tagName: ion-col
+            ↓FieldPer [ngx.components.UIDynamicElement-17960000054101]: 
+              beanData: '{"ionBean":"DivTag"}'
+              tagName: label
+              ↓FieldPerC [ngx.components.UIAttribute-17960000054102]: 
+                attrName: class
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:field
+              ↓LblPer [ngx.components.UIDynamicElement-17960000054103]: 
+                beanData: '{"ionBean":"DivTag"}'
+                tagName: span
+                ↓LblPerC [ngx.components.UIAttribute-17960000054104]: 
+                  attrName: class
+                  attrValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:field__label
+                ↓LblPerT [ngx.components.UIText-17960000054105]: 
+                  textValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:Libellé du poste
+              ↓PickPer [ngx.components.UIUseShared-17960000054106]: 
+                sharedcomponent: lib_components_ui.Application.NgxApp.p_multiselect
+                ↓options [ngx.components.UIUseVariable-17960000054107]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.posteOpts()
+                ↓optionLabel [ngx.components.UIUseVariable-17960000054108]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'label'
+                ↓optionValue [ngx.components.UIUseVariable-179600000541099]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'value'
+                ↓value [ngx.components.UIUseVariable-17960000054110]: 
+                  binding: twoWayBinding
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.local.libelle_poste
+                ↓placeholder [ngx.components.UIUseVariable-17960000054111]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Tous les postes'
+                ↓filter [ngx.components.UIUseVariable-17960000054112]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:true
+                ↓filterPlaceholder [ngx.components.UIUseVariable-179600000541121]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Rechercher'
+                ↓showClear [ngx.components.UIUseVariable-17960000054113]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:false
+                ↓scrollHeight [ngx.components.UIUseVariable-17960000054114]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'240px'
+                ↓display [ngx.components.UIUseVariable-17960000054130]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'chip'
+                ↓maxSelectedLabels [ngx.components.UIUseVariable-17960000054131]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:2
+                ↓onChange [ngx.components.UIControlEvent-17960000054115]: 
+                  attrName: (onChange)
+                  eventName: onChange
+                  ↓SetPer [ngx.components.UICustomAction-17960000054116]: 
+                    actionValue: 
+                      - xmlizable: 
+                        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                          →: |
+                            		try { page.setPoste(event); } catch (e) { console.error(e); }
+                            		resolve(true);
+                            
+                    ↓InvokePer [ngx.components.UIDynamicInvoke-17960000054117]: 
+                      beanData: '{"ionBean":"InvokeAction"}'
+                      stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+                      ↓q [ngx.components.UIControlVariable-17960000054118]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.q || ('')
+                      ↓site [ngx.components.UIControlVariable-17960000054119]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+                      ↓perimetre [ngx.components.UIControlVariable-17960000054120]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.perimetre || ('')
+                      ↓domaine_id [ngx.components.UIControlVariable-17960000054121]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.domaine_id || ('')
+                      ↓terme_id [ngx.components.UIControlVariable-17960000054122]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)
+          ↓ColEnt [ngx.components.UIDynamicElement-17960000054600]: 
+            beanData: |
+              '{
+               "ionBean": "GridCol",
+               "Size": "plain:12",
+               "SizeLg": "plain:3",
+               "SizeMd": "plain:6"
+              }'
+            tagName: ion-col
+            ↓FieldEnt [ngx.components.UIDynamicElement-17960000054601]: 
+              beanData: '{"ionBean":"DivTag"}'
+              tagName: label
+              ↓FieldEntC [ngx.components.UIAttribute-17960000054602]: 
+                attrName: class
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:field
+              ↓LblEnt [ngx.components.UIDynamicElement-17960000054603]: 
+                beanData: '{"ionBean":"DivTag"}'
+                tagName: span
+                ↓LblEntC [ngx.components.UIAttribute-17960000054604]: 
+                  attrName: class
+                  attrValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:field__label
+                ↓LblEntT [ngx.components.UIText-17960000054605]: 
+                  textValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:Entité opérationnelle
+              ↓PickEnt [ngx.components.UIUseShared-17960000054606]: 
+                sharedcomponent: lib_components_ui.Application.NgxApp.p_multiselect
+                ↓options [ngx.components.UIUseVariable-17960000054607]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.entiteOpts()
+                ↓optionLabel [ngx.components.UIUseVariable-17960000054608]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'label'
+                ↓optionValue [ngx.components.UIUseVariable-179600000546099]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'value'
+                ↓value [ngx.components.UIUseVariable-17960000054610]: 
+                  binding: twoWayBinding
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.local.entite
+                ↓placeholder [ngx.components.UIUseVariable-17960000054611]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Toutes les entités'
+                ↓filter [ngx.components.UIUseVariable-17960000054612]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:true
+                ↓filterPlaceholder [ngx.components.UIUseVariable-179600000546121]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Rechercher'
+                ↓showClear [ngx.components.UIUseVariable-17960000054613]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:false
+                ↓scrollHeight [ngx.components.UIUseVariable-17960000054614]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'240px'
+                ↓display [ngx.components.UIUseVariable-17960000054630]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'chip'
+                ↓maxSelectedLabels [ngx.components.UIUseVariable-17960000054631]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:2
+                ↓onChange [ngx.components.UIControlEvent-17960000054615]: 
+                  attrName: (onChange)
+                  eventName: onChange
+                  ↓SetEnt [ngx.components.UICustomAction-17960000054616]: 
+                    actionValue: 
+                      - xmlizable: 
+                        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                          →: |
+                            		try { page.setEntite(event); } catch (e) { console.error(e); }
+                            		resolve(true);
+                            
+                    ↓InvokeEnt [ngx.components.UIDynamicInvoke-17960000054617]: 
+                      beanData: '{"ionBean":"InvokeAction"}'
+                      stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+                      ↓q [ngx.components.UIControlVariable-17960000054618]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.q || ('')
+                      ↓site [ngx.components.UIControlVariable-17960000054619]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+                      ↓perimetre [ngx.components.UIControlVariable-17960000054620]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.perimetre || ('')
+                      ↓domaine_id [ngx.components.UIControlVariable-17960000054621]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.domaine_id || ('')
+                      ↓terme_id [ngx.components.UIControlVariable-17960000054622]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)
+          ↓ColTerme [ngx.components.UIDynamicElement-17960000054200]: 
+            beanData: |
+              '{
+               "ionBean": "GridCol",
+               "Size": "plain:12",
+               "SizeLg": "plain:3",
+               "SizeMd": "plain:6"
+              }'
+            tagName: ion-col
+            ↓FieldTerme [ngx.components.UIDynamicElement-17960000054201]: 
+              beanData: '{"ionBean":"DivTag"}'
+              tagName: label
+              ↓FieldTermeC [ngx.components.UIAttribute-17960000054202]: 
+                attrName: class
+                attrValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: plain:field
+              ↓LblTerme [ngx.components.UIDynamicElement-17960000054203]: 
+                beanData: '{"ionBean":"DivTag"}'
+                tagName: span
+                ↓LblTermeC [ngx.components.UIAttribute-17960000054204]: 
+                  attrName: class
+                  attrValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:field__label
+                ↓LblTermeT [ngx.components.UIText-17960000054205]: 
+                  textValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: plain:Appétence
+              ↓PickTerme [ngx.components.UIUseShared-17960000054206]: 
+                sharedcomponent: lib_components_ui.Application.NgxApp.p_multiselect
+                ↓options [ngx.components.UIUseVariable-17960000054207]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.termeOpts()
+                ↓optionLabel [ngx.components.UIUseVariable-17960000054208]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'label'
+                ↓optionValue [ngx.components.UIUseVariable-17960000054209]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'value'
+                ↓value [ngx.components.UIUseVariable-17960000054210]: 
+                  binding: twoWayBinding
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:this.local.terme_id
+                ↓placeholder [ngx.components.UIUseVariable-17960000054211]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Toutes les appétences'
+                ↓filter [ngx.components.UIUseVariable-17960000054212]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:true
+                ↓filterPlaceholder [ngx.components.UIUseVariable-179600000542121]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'Rechercher'
+                ↓showClear [ngx.components.UIUseVariable-17960000054213]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:false
+                ↓scrollHeight [ngx.components.UIUseVariable-17960000054214]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'240px'
+                ↓display [ngx.components.UIUseVariable-17960000054230]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:'chip'
+                ↓maxSelectedLabels [ngx.components.UIUseVariable-17960000054231]: 
+                  varValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                      - MobileSmartSourceType: script:2
+                ↓onChange [ngx.components.UIControlEvent-17960000054215]: 
+                  attrName: (onChange)
+                  eventName: onChange
+                  ↓SetTerme [ngx.components.UICustomAction-17960000054216]: 
+                    actionValue: 
+                      - xmlizable: 
+                        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                          →: |
+                            		try { page.setTerme(event); } catch (e) { console.error(e); }
+                            		resolve(true);
+                            
+                    ↓InvokeTerme [ngx.components.UIDynamicInvoke-17960000054217]: 
+                      beanData: '{"ionBean":"InvokeAction"}'
+                      stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+                      ↓q [ngx.components.UIControlVariable-17960000054218]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.q || ('')
+                      ↓site [ngx.components.UIControlVariable-17960000054219]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+                      ↓perimetre [ngx.components.UIControlVariable-17960000054220]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.perimetre || ('')
+                      ↓domaine_id [ngx.components.UIControlVariable-17960000054221]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.local.domaine_id || ('')
+                      ↓terme_id [ngx.components.UIControlVariable-17960000054222]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)
+    ↓Meta [ngx.components.UIDynamicElement-1796000005260]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: div
+      ↓MetaC [ngx.components.UIAttribute-1796000005261]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:search-meta
+      ↓Count [ngx.components.UIDynamicElement-1796000005262]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓CountC [ngx.components.UIAttribute-1796000005263]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:search-meta__count
+        ↓CountStrong [ngx.components.UIDynamicElement-17960000052640]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: strong
+          ↓CountStrongT [ngx.components.UIText-17960000052641]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:this.countN()
+        ↓CountSuffix [ngx.components.UIText-17960000052642]: 
+          textValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:this.countSuffix()
+      ↓Hint [ngx.components.UIDynamicElement-1796000005265]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: span
+        ↓HintC [ngx.components.UIAttribute-1796000005266]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:muted
+        ↓HintStyle [ngx.components.UIAttribute-17960000052661]: 
+          attrName: style
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:font-size:13px
+        ↓HintT [ngx.components.UIText-1796000005267]: 
+          textValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:Clique une carte pour voir le profil et contacter
+    ↓IfSkel [ngx.components.UIControlDirective-17960000052970]: 
+      directiveName: If
+      directiveSource: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.loading
+      ↓SkelWrap [ngx.components.UIDynamicElement-17960000052971]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓SkelWrapC [ngx.components.UIAttribute-17960000052972]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:skel-wrap skel-wrap--cards
+        ↓Sk0 [ngx.components.UIDynamicElement-17960000052981]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk0C [ngx.components.UIAttribute-17960000052982]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+        ↓Sk1 [ngx.components.UIDynamicElement-17960000052983]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk1C [ngx.components.UIAttribute-17960000052984]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+        ↓Sk2 [ngx.components.UIDynamicElement-17960000052985]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk2C [ngx.components.UIAttribute-17960000052986]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+        ↓Sk3 [ngx.components.UIDynamicElement-17960000052987]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk3C [ngx.components.UIAttribute-17960000052988]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+        ↓Sk4 [ngx.components.UIDynamicElement-17960000052989]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk4C [ngx.components.UIAttribute-17960000052990]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+        ↓Sk5 [ngx.components.UIDynamicElement-17960000052991]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk5C [ngx.components.UIAttribute-17960000052992]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+    ↓Grid [ngx.components.UIDynamicElement-1796000005270]: 
+      beanData: '{"ionBean":"Grid"}'
+      tagName: ion-grid
+      ↓GridC [ngx.components.UIAttribute-1796000005271]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:c8o-grid profile-grid
+      ↓GridHidden [ngx.components.UIAttribute-17960000052980]: 
+        attrName: '[hidden]'
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:this.loading
+      ↓Row [ngx.components.UIDynamicElement-1796000005272]: 
+        beanData: '{"ionBean":"GridRow"}'
+        tagName: ion-row
+        ↓RowC [ngx.components.UIAttribute-1796000005273]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:c8o-grid__row
+        ↓Repeat [ngx.components.UIControlDirective-1796000005274]: 
+          directiveSource: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:(this.local.results || [])
+          ↓Col [ngx.components.UIDynamicElement-1796000005275]: 
+            beanData: |
+              '{
+               "ionBean": "GridCol",
+               "Size": "plain:12",
+               "SizeLg": "plain:6",
+               "SizeMd": "plain:6",
+               "SizeXl": "plain:4"
+              }'
+            tagName: ion-col
+            ↓Card [ngx.components.UIUseShared-1796000005276]: 
+              sharedcomponent: COEsprit_fe.Application.NgxApp.CoeProfileCard
+              ↓nom [ngx.components.UIUseVariable-1796000005277]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000005274}],"path":"?.nom_affiche","prefix":"","suffix":"","custom":"","useCustom":false}}
+              ↓site [ngx.components.UIUseVariable-1796000005278]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000005274}],"path":"?.site","prefix":"","suffix":"","custom":"","useCustom":false}}
+              ↓perimetre [ngx.components.UIUseVariable-1796000005279]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000005274}],"path":"?.perimetre","prefix":"","suffix":"","custom":"","useCustom":false}}
+              ↓libellePoste [ngx.components.UIUseVariable-1796000005280]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000005274}],"path":"?.libelle_poste","prefix":"","suffix":"","custom":"","useCustom":false}}
+              ↓activites [ngx.components.UIUseVariable-1796000005281]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000005274}],"path":"?.activites_principales","prefix":"","suffix":"","custom":"","useCustom":false}}
+              ↓userId [ngx.components.UIUseVariable-1796000005282]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000005274}],"path":"?.user_id","prefix":"","suffix":"","custom":"","useCustom":false}}
+              ↓termeIds [ngx.components.UIUseVariable-1796000005285]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: script:item1796000005274?.terme_ids || item1796000005274?.termeIds || ('')
+              ↓termeLibelles [ngx.components.UIUseVariable-1796000005288]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: script:item1796000005274?.terme_libelles || item1796000005274?.termeLibelles || ('')
+              ↓domaineChipsRaw [ngx.components.UIUseVariable-1796000005289]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: script:item1796000005274?.domaine_chips || item1796000005274?.domaineChips || ('')
+              ↓photoUrl [ngx.components.UIUseVariable-1796000005290]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: script:item1796000005274?.photo_url || item1796000005274?.photoUrl || ''
+              ↓termes [ngx.components.UIUseVariable-1796000005286]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: 'script:(this.local.termes && this.local.termes.length ? this.local.termes : (this.global.coeTermes || []))'
+              ↓domaines [ngx.components.UIUseVariable-1796000005287]: 
+                varValue: 
+                  - xmlizable: 
+                    - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                    - MobileSmartSourceType: 'script:(this.local.domaines && this.local.domaines.length ? this.local.domaines : (this.global.coeDomaines || []))'
+              ↓open [ngx.components.UIControlEvent-1796000005283]: 
+                attrName: (open)
+                eventName: open
+                ↓OpenProfil [ngx.components.UICustomAction-1792398850012]: 
+                  actionValue: 
+                    - xmlizable: 
+                      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                        →: |
+                          '		var scope = props && props.stack && props.stack.root && props.stack.root.scope;
+                          		var item = (scope && scope.item1796000005274) || null;
+                          		var payload = event || {};
+                          		if ((!payload.userId && !payload.user_id) && item) {
+                          			payload = { userId: item.user_id || item.userId, user_id: item.user_id || item.userId, nom: item.nom_affiche };
+                          		}
+                          		page.ouvrirProfil(payload);
+                          		resolve(true);
+                          '
+                  isEnabled: false
+                ↓IfElse [ngx.components.UIDynamicIf-1792518716014]: 
+                  beanData: '{"ionBean":"IfElseAction","condition":"source:{\"filter\":\"Iteration\",\"project\":\"COEsprit_fe\",\"input\":\"\",\"model\":{\"data\":[{\"priority\":1796000005274}],\"path\":\"\",\"prefix\":\"\",\"suffix\":\"?.user_id == this.global.user.codeAgent\",\"custom\":\"\",\"useCustom\":false}}"}'
+                  ↓PushPage [ngx.components.UIDynamicAction-1792518752023]: 
+                    beanData: '{"ionBean":"PushPageAction","page":"plain:COEsprit_fe.Application.NgxApp.MaFiche"}'
+                  ↓Else_Handler [ngx.components.UIActionElseEvent-1792518732058]: 
+                    ↓PushPage [ngx.components.UIDynamicAction-1792502505928]: 
+                      beanData: |
+                        '{
+                         "ionBean": "PushPageAction",
+                         "page": "plain:COEsprit_fe.Application.NgxApp.Profil",
+                         "data": "source:{\"filter\":\"Iteration\",\"project\":\"COEsprit_fe\",\"input\":\"\",\"model\":{\"data\":[{\"priority\":1796000005274}],\"path\":\"\",\"prefix\":\"{ user_id :\",\"suffix\":\"?.user_id } \",\"custom\":\"\",\"useCustom\":false}}"
+                        }'
+    ↓IfEmpty [ngx.components.UIControlDirective-1796000005290]: 
+      directiveName: If
+      directiveSource: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:!(this.local.results && this.local.results.length) && !this.loading
+      ↓Empty [ngx.components.UIDynamicElement-1796000005291]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓EmptyC [ngx.components.UIAttribute-1796000005292]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:empty
+        ↓EmptyIcon [ngx.components.UIDynamicElement-1796000005293]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓EmptyIconC [ngx.components.UIAttribute-1796000005294]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:empty__icon
+          ↓EmptyIconT [ngx.components.UIText-1796000005295]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:∅
+        ↓EmptyH [ngx.components.UIDynamicElement-1796000005296]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: h2
+          ↓EmptyHT [ngx.components.UIText-1796000005297]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Aucun profil pour ces critères
+        ↓EmptyP [ngx.components.UIDynamicElement-1796000005298]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: p
+          ↓EmptyPT [ngx.components.UIText-1796000005299]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Modifiez la recherche ou les filtres.
+↓PageStyle [ngx.components.UIStyle-17960000052990]: 
+  styleContent: 
+    - xmlizable: 
+      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+        →: |
+          '.search-bar__main.toolbar {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+          }
+          .search-bar__main .btn {
+            height: var(--control-h, 52px);
+            flex: 0 0 auto;
+          }
+          .search-bar__main .search {
+            position: relative;
+            min-width: 260px;
+            flex: 1 1 320px;
+          }
+          .search-bar__main .search .field { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+          .search-bar__main .search .input { width: 100%; box-sizing: border-box; padding-left: 12px; }
+          .search-bar__main .search lib_components_ui-p_autocomplete {
+            display: block;
+            width: 100%;
+            min-width: 260px;
+          }
+          .search-bar__main .search ::ng-deep .p-autocomplete {
+            width: 100% !important;
+            min-width: 260px;
+          }
+          .search-bar__main .search ::ng-deep .p-autocomplete-multiple-container {
+            width: 100%;
+          }
+          .search-bar__main .search ::ng-deep .p-autocomplete-token {
+            flex: 0 0 auto;
+          }
+          .search-bar__main .search ::ng-deep .p-autocomplete-input-token {
+            flex: 1 0 80px;
+          }
+          .search-bar__main .search ::ng-deep .p-autocomplete-input-token input {
+            height: 28px;
+          }
+          .search-bar__filters .field lib_components_ui-p_multiselect {
+            display: block;
+            width: 100%;
+          }
+          .search-bar__filters lib_components_ui-p_multiselect ::ng-deep .p-multiselect {
+            height: auto !important;
+            min-height: 42px;
+          }
+          .search-bar__filters lib_components_ui-p_multiselect ::ng-deep .p-multiselect-label {
+            flex-wrap: wrap;
+            white-space: normal;
+            gap: 4px;
+            min-height: 40px;
+            padding-top: 6px;
+            padding-bottom: 6px;
+          }
+          .search-bar__filters .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+          }
+          .search-bar[hidden] { display: none !important; }
+          .skel-bar { display: flex; flex-direction: column; gap: 16px; }
+          .skel-bar__top { display: flex; align-items: flex-end; gap: 12px; }
+          .skel-bar__top .skel { height: 52px; flex: 1 1 auto; }
+          .skel-bar__top .skel--btn { flex: 0 0 148px; }
+          .skel-bar__chips { display: flex; gap: 8px; flex-wrap: wrap; }
+          .skel-bar__chips .skel { width: 108px; height: 32px; border-radius: 999px; }
+          .skel-bar__filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+          .skel-bar__filters .skel { height: 52px; }
+          @media (max-width: 900px) {
+            .skel-bar__filters { grid-template-columns: 1fr 1fr; }
+          }
+          .profile-grid > ion-row {
+            align-items: stretch;
+            align-content: flex-start;
+            width: calc(100% + 16px);
+            margin: -8px !important;
+          }
+          .profile-grid > ion-row > ion-col {
+            display: flex;
+            flex-grow: 0 !important;
+            box-sizing: border-box;
+            min-width: 0;
+            margin: 0 !important;
+            padding: 8px !important;
+          }
+          '
+↓PageEvent [ngx.components.UIPageEvent-17960000052950]: 
+  ↓InitLocals [ngx.components.UICustomAction-17960000052953]: 
+    actionValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+          →: |
+            '		page.loading = true;
+            		if (page.local.q === undefined) page.local.q = "";
+            		if (page.local.recherche === undefined) page.local.recherche = [];
+            		if (!Array.isArray(page.local.site)) page.local.site = page.local.site ? [String(page.local.site)] : [];
+            		if (!Array.isArray(page.local.libelle_poste)) page.local.libelle_poste = page.local.libelle_poste ? [String(page.local.libelle_poste)] : [];
+            		if (!Array.isArray(page.local.entite)) page.local.entite = page.local.entite ? [String(page.local.entite)] : [];
+            		if (page.local.domaine_id === undefined) page.local.domaine_id = "";
+            		if (!Array.isArray(page.local.terme_id)) page.local.terme_id = page.local.terme_id ? [String(page.local.terme_id)] : [];
+            		if (page.local.results === undefined) page.local.results = [];
+            		if (page.local.domaines === undefined) page.local.domaines = [];
+            		if (page.local.termes === undefined) page.local.termes = [];
+            		setTimeout(function () { page.syncUserFromGlobal(); }, 0);
+            		resolve(true);
+            '
+  ↓IfReferentiel [ngx.components.UIDynamicAction-17960000052962]: 
+    beanData: '{"ionBean":"IfAction","condition":"script:!(page.global && page.global.coeDomaines && page.global.coeDomaines.length && page.global.coeTermes && page.global.coeTermes.length && page.global.coeListes && page.global.coeListes.length)"}'
+    ↓InvokeReferentiel [ngx.components.UIDynamicInvoke-17960000052954]: 
+      beanData: '{"ionBean":"InvokeAction"}'
+      stack: COEsprit_fe.Application.NgxApp.Referentiel_Charger
+  ↓SyncRef [ngx.components.UICustomAction-179600000529541]: 
+    actionValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+          →: |
+            '		var g = page.global || {};
+            		var dom = (page.local.domaines && page.local.domaines.length) ? page.local.domaines : (g.coeDomaines || []);
+            		var ter = (page.local.termes && page.local.termes.length) ? page.local.termes : (g.coeTermes || []);
+            		page.local.domaines = (dom || []).slice();
+            		page.local.termes = (ter || []).slice();
+            		resolve(true);
+            '
+  ↓InvokeRecherche [ngx.components.UIDynamicInvoke-17960000052955]: 
+    beanData: '{"ionBean":"InvokeAction"}'
+    stack: COEsprit_fe.Application.NgxApp.Recherche_Lancer
+    ↓q [ngx.components.UIControlVariable-17960000052956]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.local.q || ('')
+    ↓site [ngx.components.UIControlVariable-17960000052957]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.joinFiltre(this.local.site)
+    ↓perimetre [ngx.components.UIControlVariable-17960000052958]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.local.perimetre || ('')
+    ↓domaine_id [ngx.components.UIControlVariable-17960000052959]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.local.domaine_id || ('')
+    ↓terme_id [ngx.components.UIControlVariable-17960000052960]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.joinFiltre(this.local.terme_id)

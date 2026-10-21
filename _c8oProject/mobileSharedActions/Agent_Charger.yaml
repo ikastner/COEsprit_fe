@@ -1,0 +1,9 @@
+comment: Charge l annuaire hors SI.
+↓Go [ngx.components.UICustomAction-1796000009321]: 
+  actionValue: 
+    - xmlizable: 
+      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+        →: |
+          (page as any).chercherAgents();
+          resolve(true);

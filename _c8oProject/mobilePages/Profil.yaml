@@ -1,0 +1,340 @@
+scriptContent: 
+  - xmlizable: 
+    - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+    - com.twinsoft.convertigo.beans.common.FormatedContent: 
+      →: |
+        '/*Begin_c8o_PageImport*/
+        /*End_c8o_PageImport*/
+        /*Begin_c8o_PageDeclaration*/
+        	targetUserId: string;
+        	view: string;
+        	pfaUserName: string;
+        	pfaUserRole: string;
+        	loading: boolean;
+        /*End_c8o_PageDeclaration*/
+        /*Begin_c8o_PageConstructor*/
+        		this.targetUserId = "";
+        		this.view = "recherche";
+        		this.pfaUserName = "";
+        		this.pfaUserRole = "";
+        		try {
+        			var g0: any = this.global || {};
+        			var c0 = g0.coeIdentite || {};
+        			var u0 = g0.user || {};
+        			var nom0 = String(c0.nom || u0.displayName || u0.nom || "").trim();
+        			var role0 = String(c0.role || "").trim();
+        			if (!role0 && u0.role) role0 = Array.isArray(u0.role) ? u0.role.join(", ") : String(u0.role || "");
+        			if (nom0) this.pfaUserName = nom0;
+        			if (role0) this.pfaUserRole = role0;
+        		} catch (eId) {}
+        		this.loading = true;
+        /*End_c8o_PageConstructor*/
+        /*Begin_c8o_PageInitialization*/
+        		/*End_c8o_PageInitialization*/
+        /*Begin_c8o_PageAfterViewInit*/
+        		/*End_c8o_PageAfterViewInit*/
+        /*Begin_c8o_PageFinalization*/
+        		/*End_c8o_PageFinalization*/
+        /*Begin_c8o_PageFunction*/
+        	syncUserFromGlobal() {
+        		var u = this.global && this.global.user;
+        		if (!u) return;
+        		this.pfaUserName = String(u.displayName || u.nom || u.codeAgent || "");
+        		var roles = u.role;
+        		this.pfaUserRole = Array.isArray(roles) ? roles.join(", ") : String(roles || "");
+        	}
+        	resoudreUserId() {
+        		var p = this.navParams && this.navParams.data;
+        		var id = (p && (p.userId || p.user_id)) || this.targetUserId || "";
+        		if (!id) {
+        			try {
+        				var qp = this.route && this.route.snapshot && this.route.snapshot.queryParamMap;
+        				if (qp) id = qp.get("userId") || qp.get("user_id") || "";
+        			} catch (e) {}
+        		}
+        		return String(id || "").trim();
+        	}
+        	communauteLabel() {
+        		var f = this.local.fiche || {};
+        		return String(f.communaute || "");
+        	}
+        	libelleFiche() {
+        		var f = this.local.fiche || {};
+        		return "" + (f.nom_affiche || f.nom || f.user_id || this.resoudreUserId() || "Profil");
+        	}
+        	retourRecherche() {
+        		this.routerProvider.navigateRoot("Recherche", false, null);
+        	}
+        	navSidebar(event) {
+        		var code = event;
+        		if (code && code.route) code = code.route;
+        		code = String(code || "");
+        		if (code.indexOf("logout") >= 0) { this.deconnecter(); return; }
+        		if (code === "profil") return;
+        		if (code === "recherche") this.routerProvider.navigateRoot("Recherche", false, null);
+        		if (code === "ma-fiche") this.routerProvider.navigateRoot("MaFiche", false, null);
+        		if (code === "admin") this.routerProvider.navigateRoot("Admin", false, null);
+        		if (code === "pilote") this.routerProvider.navigateRoot("Pilote", false, null);
+        	}
+        	deconnecter() {
+        		var so = this.routerProvider && this.routerProvider.sharedObject;
+        		if (so) { so.user = null; so.coeIdentite = null; so.isConnected = false; }
+        		if (this.global) { this.global.user = null; this.global.coeIdentite = null; }
+        		this.routerProvider.navigateRoot("Login", false, null);
+        	}
+        /*End_c8o_PageFunction*/
+        '
+segment: profil
+title: Profil
+↓PfaSidebarUse [ngx.components.UIUseShared-17960000054900]: 
+  identifier: coeSidebar
+  sharedcomponent: COEsprit_fe.Application.NgxApp.PfaSidebar
+  ↓active [ngx.components.UIUseVariable-1796000005401]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:this.view
+  ↓userName [ngx.components.UIUseVariable-1796000005402]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:this.pfaUserName
+  ↓userRole [ngx.components.UIUseVariable-1796000005403]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:this.pfaUserRole
+  ↓navigate [ngx.components.UIControlEvent-1796000005404]: 
+    attrName: (navigate)
+    eventName: navigate
+    ↓navigateDo [ngx.components.UICustomAction-1796000005405]: 
+      actionValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+          - com.twinsoft.convertigo.beans.common.FormatedContent: 
+            →: |
+              page.navSidebar(event);
+              resolve(true);
+              
+↓Content [ngx.components.UIDynamicElement-1796000005410]: 
+  beanData: '{"ionBean":"Content"}'
+  tagName: ion-content
+  ↓ContentClass [ngx.components.UIAttribute-17960000054109]: 
+    attrName: class
+    attrValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: plain:coe-page
+  ↓Wrap [ngx.components.UIDynamicElement-1796000005411]: 
+    beanData: '{"ionBean":"DivTag"}'
+    tagName: div
+    ↓WrapC [ngx.components.UIAttribute-1796000005492]: 
+      attrName: class
+      attrValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:profil
+    ↓Topbar [ngx.components.UIDynamicElement-17960000054920]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: header
+      ↓TopbarC [ngx.components.UIAttribute-17960000054921]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:topbar
+      ↓TopTitles [ngx.components.UIDynamicElement-17960000054928]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓TopTitle [ngx.components.UIDynamicElement-17960000054922]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: h1
+          ↓TopTitleC [ngx.components.UIAttribute-17960000054923]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:topbar__title
+          ↓TopTitleT [ngx.components.UIText-17960000054924]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Profil
+        ↓TopSub [ngx.components.UIDynamicElement-17960000054925]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: p
+          ↓TopSubC [ngx.components.UIAttribute-17960000054926]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:topbar__subtitle
+          ↓TopSubT [ngx.components.UIText-17960000054927]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:this.communauteLabel()
+      ↓TopActions [ngx.components.UIDynamicElement-17960000054929]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓TopActionsC [ngx.components.UIAttribute-17960000054930]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:topbar__actions
+        ↓Back [ngx.components.UIDynamicElement-1796000005413]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: button
+          ↓BackC [ngx.components.UIAttribute-1796000005414]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:topbar__back
+          ↓BackType [ngx.components.UIAttribute-1796000005418]: 
+            attrName: type
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:button
+          ↓BackE [ngx.components.UIControlEvent-1796000005415]: 
+            ↓BackA [ngx.components.UICustomAction-1792503394085]: 
+              actionValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                  - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                    →: |
+                      page.retourRecherche();
+                      resolve(true);
+        ↓BackArrow [ngx.components.UIDynamicElement-1796000005419]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: span
+          ↓BackArrowC [ngx.components.UIAttribute-1796000005420]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:topbar__back-arrow
+          ↓BackArrowA [ngx.components.UIAttribute-1796000005421]: 
+            attrName: aria-hidden
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:true
+          ↓BackArrowT [ngx.components.UIText-1796000005422]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:←
+          ↓BackT [ngx.components.UIText-1796000005417]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Retour à la recherche
+    ↓IfSkel [ngx.components.UIControlDirective-1796000005441]: 
+      directiveName: If
+      directiveSource: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.loading
+      ↓SkelWrap [ngx.components.UIDynamicElement-1796000005442]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓SkelWrapC [ngx.components.UIAttribute-1796000005443]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:skel-wrap
+        ↓Sk0 [ngx.components.UIDynamicElement-1796000005452]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk0C [ngx.components.UIAttribute-1796000005453]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--hero
+        ↓Sk1 [ngx.components.UIDynamicElement-1796000005454]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk1C [ngx.components.UIAttribute-1796000005455]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+        ↓Sk2 [ngx.components.UIDynamicElement-1796000005456]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk2C [ngx.components.UIAttribute-1796000005457]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel skel--card
+        ↓Sk3 [ngx.components.UIDynamicElement-1796000005458]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓Sk3C [ngx.components.UIAttribute-1796000005459]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:skel
+    ↓IfReady [ngx.components.UIControlDirective-1796000005440]: 
+      directiveName: If
+      directiveSource: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:!this.loading
+      ↓FicheScreen [ngx.components.UIUseShared-1796000005418]: 
+        sharedcomponent: COEsprit_fe.Application.NgxApp.CoeFicheScreen
+        ↓fiche [ngx.components.UIUseVariable-1796000005419]: 
+          varValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:this.local.fiche || {}
+        ↓editable [ngx.components.UIUseVariable-1796000005420]: 
+          varValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:false
+        ↓termes [ngx.components.UIUseVariable-1796000005421]: 
+          varValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:this.local.termes || []
+↓PageEvent [ngx.components.UIPageEvent-1796000005430]: 
+  ↓ReadNav [ngx.components.UICustomAction-1796000005433]: 
+    actionValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+          →: |
+            		page.loading = true;
+            		page.syncUserFromGlobal();
+            		page.targetUserId = page.resoudreUserId();
+            		if (!page.local.fiche) page.local.fiche = {};
+            		resolve(true);
+            
+    ↓InvokeFiche [ngx.components.UIDynamicInvoke-1796000005435]: 
+      beanData: '{"ionBean":"InvokeAction"}'
+      stack: COEsprit_fe.Application.NgxApp.Fiche_Charger
+      ↓userId [ngx.components.UIControlVariable-1796000005436]: 
+        varValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:this.resoudreUserId()
+  ↓InvokeMoi [ngx.components.UIDynamicInvoke-1796000005429]: 
+    beanData: '{"ionBean":"InvokeAction"}'
+    stack: COEsprit_fe.Application.NgxApp.Moi_Charger
+  ↓InvokeIndicateurs [ngx.components.UIDynamicInvoke-1796000005437]: 
+    beanData: '{"ionBean":"InvokeAction"}'
+    stack: COEsprit_fe.Application.NgxApp.Indicateurs_Charger
+    ↓user_id [ngx.components.UIControlVariable-1796000005438]: 
+      varValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.resoudreUserId()

@@ -1,0 +1,99 @@
+comment: Chips appétences — classes aide-chip / cv-tag maquette.
+scriptContent: 
+  - xmlizable: 
+    - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+    - com.twinsoft.convertigo.beans.common.FormatedContent: 
+      →: |
+        '/*Begin_c8o_CompDeclaration*/
+        /*End_c8o_CompDeclaration*/
+        /*Begin_c8o_CompFunction*/
+        	listeTermes() {
+        		var ids = this.termeIds;
+        		if (typeof ids === "string") {
+        			try { ids = JSON.parse(ids); } catch (e) { ids = String(ids).split(","); }
+        		}
+        		if (!Array.isArray(ids)) ids = [];
+        		var termes = this.termes || [];
+        		var out = [];
+        		for (var i = 0; i < ids.length; i++) {
+        			var id = ids[i];
+        			if (id == null || id === "") continue;
+        			var found = null;
+        			for (var j = 0; j < termes.length; j++) {
+        				var t = termes[j];
+        				if (String(t.id || t.terme_id) === String(id)) { found = t; break; }
+        			}
+        			out.push(found ? (found.libelle || found.label || id) : id);
+        		}
+        		return out;
+        	}
+        	hasTermes() {
+        		return this.listeTermes().length > 0;
+        	}
+        /*End_c8o_CompFunction*/
+        '
+↓Root [ngx.components.UIDynamicElement-1796000007201]: 
+  beanData: '{"ionBean":"DivTag"}'
+  tagName: div
+  ↓RootClass [ngx.components.UIAttribute-1796000007202]: 
+    attrName: class
+    attrValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: plain:cv-skills
+  ↓IfEmpty [ngx.components.UIControlDirective-1796000007203]: 
+    directiveName: If
+    directiveSource: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:!this.hasTermes()
+    ↓Empty [ngx.components.UIDynamicElement-1796000007204]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: span
+      ↓EmptyC [ngx.components.UIAttribute-1796000007205]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:cv-tag cv-tag--empty
+      ↓EmptyT [ngx.components.UIText-1796000007206]: 
+        textValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:Aucune appétence renseignée
+  ↓IfList [ngx.components.UIControlDirective-1796000007210]: 
+    directiveName: If
+    directiveSource: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:this.hasTermes()
+    ↓Chips [ngx.components.UIDynamicElement-1796000007211]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: div
+      ↓ChipsC [ngx.components.UIAttribute-1796000007212]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:chip-row
+      ↓Repeat [ngx.components.UIControlDirective-1796000007213]: 
+        directiveSource: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:this.listeTermes()
+        ↓Chip [ngx.components.UIDynamicElement-1796000007214]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: span
+          ↓ChipC [ngx.components.UIAttribute-1796000007215]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:cv-tag cv-tag--soft
+          ↓ChipT [ngx.components.UIText-1796000007216]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000007213}],"path":"","prefix":"","suffix":"","custom":"","useCustom":false}}
+↓termeIds [ngx.components.UICompVariable-1796000007230]: 
+↓termes [ngx.components.UICompVariable-1796000007231]: 

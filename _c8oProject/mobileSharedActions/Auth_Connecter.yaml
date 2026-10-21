@@ -1,0 +1,47 @@
+comment: CallSequence Auth_Login + SetGlobal user / isConnected + toast erreur.
+↓user [ngx.components.UIStackVariable-1796000000501]: 
+↓password [ngx.components.UIStackVariable-1796000000502]: 
+↓testRole [ngx.components.UIStackVariable-1796000000503]: 
+↓CallLogin [ngx.components.UIDynamicAction-1796000000510]: 
+  beanData: '{"ionBean":"CallSequenceAction","requestable":"plain:COEsprit_be.Auth_Login"}'
+  ↓user [ngx.components.UIControlVariable-1796000000511]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.user || ''
+  ↓password [ngx.components.UIControlVariable-1796000000512]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.password || ''
+  ↓testRole [ngx.components.UIControlVariable-1796000000513]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.testRole || ''
+  ↓IfElse [ngx.components.UIDynamicIf-1796000000520]: 
+    beanData: '{"ionBean":"IfElseAction","condition":"script:!!(stack[''1796000000510'']?.out?.error || stack[''1796000000510'']?.out?.document?.error)"}'
+    ↓isConnected [ngx.components.UIDynamicAction-1796000000521]: 
+      beanData: |
+        '{
+         "ionBean": "SetGlobalAction",
+         "Property": "plain:isConnected",
+         "Value": "script:false"
+        }'
+    ↓Toast [ngx.components.UIDynamicAction-1796000000522]: 
+      beanData: '{"ionBean":"ToastAction","message":"script:String(stack[''1796000000510'']?.out?.error?.message || stack[''1796000000510'']?.out?.document?.error?.message || ''Connexion refusée.'')"}'
+    ↓Else_Handler [ngx.components.UIActionElseEvent-1796000000523]: 
+      ↓user [ngx.components.UIDynamicAction-1796000000530]: 
+        beanData: |
+          '{
+           "ionBean": "SetGlobalAction",
+           "Property": "plain:user",
+           "Value": "script:(function(o){ var u=o&&(o.user||(o.document&&o.document.user)); if(u&&u.role!=null&&!Array.isArray(u.role)) u.role=[u.role]; return u; })(stack[''1796000000510'']?.out)"
+          }'
+      ↓isConnectedOk [ngx.components.UIDynamicAction-1796000000531]: 
+        beanData: |
+          '{
+           "ionBean": "SetGlobalAction",
+           "Property": "plain:isConnected",
+           "Value": "script:true"
+          }'

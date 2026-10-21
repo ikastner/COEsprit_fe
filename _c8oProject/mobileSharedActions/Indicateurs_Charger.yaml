@@ -1,0 +1,35 @@
+comment: Charge meme_site et appetences_uniques dans page.global.coeIndicateurs.
+↓user_id [ngx.components.UIStackVariable-1796000007101]: 
+↓CallInd [ngx.components.UIDynamicAction-1796000007110]: 
+  beanData: |
+    '{
+     "ionBean": "CallSequenceAction",
+     "requestable": "plain:COEsprit_be.Fiche_Indicateurs",
+     "cachePolicy": "plain:none",
+     "cacheTtl": "plain:0"
+    }'
+  ↓user_id [ngx.components.UIControlVariable-1796000007112]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.user_id || ('')
+  ↓Memoriser [ngx.components.UICustomAction-1796000007111]: 
+    actionValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+        - com.twinsoft.convertigo.beans.common.FormatedContent: 
+          →: |
+            '		var stack = props && props.stack;
+            		var out = (stack && stack["1796000007110"] && stack["1796000007110"].out) || (props && props.out);
+            		var root = out && (out.document || out) || {};
+            		var ind = root.indicateurs || null;
+            		if (!root.error && ind) {
+            			page.global.coeIndicateurs = {
+            				user_id: String(ind.user_id || ""),
+            				meme_site: Number(ind.meme_site) || 0,
+            				appetences_uniques: Number(ind.appetences_uniques) || 0
+            			};
+            			try { if (page.ref) page.ref.detectChanges(); } catch (e) {}
+            		}
+            		resolve(true);
+            '

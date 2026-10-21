@@ -1,0 +1,9 @@
+comment: Recharge communautes, perimetres et membres.
+↓Go [ngx.components.UICustomAction-1796000009311]: 
+  actionValue: 
+    - xmlizable: 
+      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+        →: |
+          (page as any).recharger();
+          resolve(true);

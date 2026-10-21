@@ -1,0 +1,478 @@
+comment: Carte résultat — profile-card maquette (avatar, chips domaines, appétences, body).
+scriptContent: 
+  - xmlizable: 
+    - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+    - com.twinsoft.convertigo.beans.common.FormatedContent: 
+      →: |
+        '/*Begin_c8o_CompDeclaration*/
+        /*End_c8o_CompDeclaration*/
+        /*Begin_c8o_CompFunction*/
+        	libelle() {
+        		return "" + (this.nom || this.userId || "Profil");
+        	}
+        	poste() {
+        		return "" + (this.libellePoste || "");
+        	}
+        	meta() {
+        		var poste = (this.libellePoste || "").toString().trim();
+        		var site = (this.site || "").toString().trim();
+        		if (poste && site) return poste + " · " + site;
+        		return poste || site || "Poste non renseigné";
+        	}
+        	body() {
+        		var t = this.activites || "";
+        		return t ? ("" + t) : "Activités non renseignées pour le moment.";
+        	}
+        	initials() {
+        		var parts = String(this.libelle()).trim().split(/\s+/).filter(Boolean);
+        		return parts.slice(0, 2).map(function (p) { return (p[0] || "").toUpperCase(); }).join("");
+        	}
+        	photoSrc() {
+        		var s = String(this.photoUrl || "").trim();
+        		if (!s) return "";
+        		if (s.indexOf("data:") === 0) return s;
+        		var mime = "image/jpeg";
+        		if (s.indexOf("iVBOR") === 0) mime = "image/png";
+        		else if (s.indexOf("R0lGOD") === 0) mime = "image/gif";
+        		else if (s.indexOf("UklGR") === 0) mime = "image/webp";
+        		return "data:" + mime + ";base64," + s;
+        	}
+        	parseTermeIds(raw = undefined) {
+        		if (raw === undefined) raw = this.termeIds;
+        		if (raw == null || raw === "") return [];
+        		if (Array.isArray(raw)) return raw.map(function (x) { return String(x && (x.id || x.terme_id || x)); }).filter(Boolean);
+        		if (typeof raw === "object") {
+        			if (raw.row != null) return this.parseTermeIds(raw.row);
+        			var vals = Object.keys(raw).filter(function (k) { return /^\d+$/.test(k); }).map(function (k) { return raw[k]; });
+        			if (vals.length) return this.parseTermeIds(vals);
+        		}
+        		return String(raw).split(/[,;|]/).map(function (s) { return s.trim(); }).filter(Boolean);
+        	}
+        	refTermes() {
+        		if (Array.isArray(this.termes) && this.termes.length) return this.termes;
+        		var g = this.global && this.global.coeTermes;
+        		return Array.isArray(g) ? g : [];
+        	}
+        	refDomaines() {
+        		if (Array.isArray(this.domaines) && this.domaines.length) return this.domaines;
+        		var g = this.global && this.global.coeDomaines;
+        		return Array.isArray(g) ? g : [];
+        	}
+        	rowTermeLibelles() {
+        		var raw = this.termeLibelles;
+        		if (raw == null || raw === "") return [];
+        		return String(raw).split("|").map(function (s) { return s.trim(); }).filter(Boolean);
+        	}
+        	rowDomaineChips() {
+        		var raw = this.domaineChipsRaw;
+        		if (raw == null || raw === "") return [];
+        		return String(raw).split("|").map(function (s) { return s.trim(); }).filter(Boolean).map(function (part) {
+        			var bits = part.split("::");
+        			return {
+        				id: bits[0] || part,
+        				label: bits[1] || bits[0] || part,
+        				tone: bits[2] || "sky"
+        			};
+        		});
+        	}
+        	termesMatched() {
+        		var ids = this.parseTermeIds();
+        		var all = this.refTermes();
+        		var labels = this.rowTermeLibelles();
+        		if (!ids.length && !labels.length) return [];
+        		var out = [];
+        		var n = Math.max(ids.length, labels.length);
+        		for (var i = 0; i < n; i++) {
+        			var id = ids[i] || "";
+        			var hit = null;
+        			if (id) {
+        				for (var j = 0; j < all.length; j++) {
+        					var t = all[j];
+        					if (String(t.id || t.terme_id) === id) { hit = t; break; }
+        				}
+        			}
+        			if (hit) {
+        				out.push(hit);
+        			} else if (labels[i] || id) {
+        				out.push({ id: id || labels[i], terme_id: id, libelle: labels[i] || id, domaine_id: "" });
+        			}
+        		}
+        		return out;
+        	}
+        	domaineChips() {
+        		var fromRow = this.rowDomaineChips();
+        		if (fromRow.length) return fromRow;
+        		var matched = this.termesMatched();
+        		var domaines = this.refDomaines();
+        		var seen = {};
+        		var out = [];
+        		for (var i = 0; i < matched.length; i++) {
+        			var did = matched[i].domaine_id || matched[i].domaineId;
+        			if (!did || seen[did]) continue;
+        			seen[did] = true;
+        			var d = null;
+        			for (var j = 0; j < domaines.length; j++) {
+        				var dj = domaines[j];
+        				var djId = dj && (dj.id || dj.domaine_id);
+        				if (String(djId) === String(did)) { d = dj; break; }
+        			}
+        			out.push({
+        				id: did,
+        				label: d ? (d.libelle || d.label || did) : did,
+        				tone: d ? (d.tone || "sky") : "sky"
+        			});
+        		}
+        		return out;
+        	}
+        	hasDomaines() {
+        		return this.domaineChips().length > 0;
+        	}
+        	domainesAffiches() {
+        		var all = this.domaineChips();
+        		var shown = all.slice(0, 3);
+        		var rest = all.length - shown.length;
+        		if (rest > 0) shown.push({ id: "more-domaines", label: "+" + rest, plus: true });
+        		return shown;
+        	}
+        	appetencesPreview() {
+        		return this.termesMatched().slice(0, 3).map(function (t) {
+        			return t.libelle || t.label || t.id;
+        		});
+        	}
+        	appetencesRest() {
+        		return Math.max(0, this.termesMatched().length - 3);
+        	}
+        	chipClass(d) {
+        		if (d && d.plus) return "chip chip--muted";
+        		return "aide-chip aide-chip--" + (d && d.tone ? d.tone : "sky") + " aide-chip--static";
+        	}
+        	emitOpen() {
+        		if (this.open && this.open.emit) this.open.emit({ userId: this.userId, nom: this.nom });
+        	}
+        /*End_c8o_CompFunction*/
+        '
+↓Root [ngx.components.UIElement-1792502753440]: 
+  tagName: div
+  ↓Head [ngx.components.UIDynamicElement-1796000007110]: 
+    beanData: '{"ionBean":"DivTag"}'
+    tagName: div
+    ↓HeadC [ngx.components.UIAttribute-1796000007111]: 
+      attrName: class
+      attrValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:profile-card__head
+    ↓Avatar [ngx.components.UIDynamicElement-1796000007112]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: div
+      ↓AvatarC [ngx.components.UIAttribute-1796000007113]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: 'script:''avatar'' + (this.photoSrc() ? '' avatar--photo'' : '''')'
+      ↓IfPhoto [ngx.components.UIControlDirective-1796000007201]: 
+        directiveName: If
+        directiveSource: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:!!this.photoSrc()
+        ↓AvatarImg [ngx.components.UIDynamicElement-1796000007202]: 
+          beanData: '{"ionBean":"DivTag"}'
+          selfClose: true
+          tagName: img
+          ↓ImgSrc [ngx.components.UIAttribute-1796000007203]: 
+            attrName: '[src]'
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:this.photoSrc()
+          ↓ImgAlt [ngx.components.UIAttribute-1796000007204]: 
+            attrName: alt
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:Photo
+      ↓IfInitials [ngx.components.UIControlDirective-1796000007205]: 
+        directiveName: If
+        directiveSource: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:!this.photoSrc()
+        ↓AvatarT [ngx.components.UIText-1796000007115]: 
+          textValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:this.initials()
+      ↓Click [ngx.components.UIControlEvent-1796000007104]: 
+    ↓Identity [ngx.components.UIDynamicElement-1796000007120]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: div
+      ↓IdentityC [ngx.components.UIAttribute-1796000007121]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:profile-card__identity
+      ↓Name [ngx.components.UIDynamicElement-1796000007122]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓NameC [ngx.components.UIAttribute-1796000007123]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:profile-card__name
+        ↓NameT [ngx.components.UIText-1796000007124]: 
+          textValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:this.libelle()
+      ↓IfPoste [ngx.components.UIControlDirective-1796000007125]: 
+        directiveName: If
+        directiveSource: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:false
+        ↓Poste [ngx.components.UIDynamicElement-1796000007126]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: div
+          ↓PosteC [ngx.components.UIAttribute-1796000007127]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:profile-card__poste
+          ↓PosteT [ngx.components.UIText-1796000007128]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:this.poste()
+      ↓Meta [ngx.components.UIDynamicElement-1796000007129]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: div
+        ↓MetaC [ngx.components.UIAttribute-1796000007130]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:profile-card__meta
+        ↓MetaT [ngx.components.UIText-1796000007131]: 
+          textValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: script:this.meta()
+  ↓DomaineRow [ngx.components.UIDynamicElement-1796000007160]: 
+    beanData: '{"ionBean":"DivTag"}'
+    tagName: div
+    ↓DomaineRowC [ngx.components.UIAttribute-1796000007161]: 
+      attrName: class
+      attrValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:chip-row profile-card__domaines
+    ↓IfDomEmpty [ngx.components.UIControlDirective-1796000007162]: 
+      directiveName: If
+      directiveSource: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:!this.hasDomaines()
+      ↓Muted [ngx.components.UIDynamicElement-1796000007163]: 
+        beanData: '{"ionBean":"DivTag"}'
+        tagName: span
+        ↓MutedC [ngx.components.UIAttribute-1796000007164]: 
+          attrName: class
+          attrValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:chip chip--muted
+        ↓MutedT [ngx.components.UIText-1796000007165]: 
+          textValue: 
+            - xmlizable: 
+              - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+              - MobileSmartSourceType: plain:Pas d’appétence
+    ↓IfDom [ngx.components.UIControlDirective-1796000007166]: 
+      directiveName: If
+      directiveSource: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.hasDomaines()
+      ↓RepeatDom [ngx.components.UIControlDirective-1796000007167]: 
+        directiveSource: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:this.domainesAffiches()
+        ↓Chip [ngx.components.UIDynamicElement-1796000007168]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: span
+          ↓ChipC [ngx.components.UIAttribute-1796000007169]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:this.chipClass(item1796000007167)
+          ↓ChipT [ngx.components.UIText-1796000007170]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000007167}],"path":"?.label","prefix":"","suffix":"","custom":"","useCustom":false}}
+  ↓IfApp [ngx.components.UIControlDirective-1796000007175]: 
+    directiveName: If
+    directiveSource: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:true
+    ↓AppRow [ngx.components.UIDynamicElement-1796000007176]: 
+      beanData: '{"ionBean":"DivTag"}'
+      tagName: div
+      ↓AppRowC [ngx.components.UIAttribute-1796000007177]: 
+        attrName: class
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: plain:profile-card__appetences
+      ↓RepeatApp [ngx.components.UIControlDirective-1796000007178]: 
+        directiveSource: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:this.appetencesPreview()
+        ↓Tag [ngx.components.UIDynamicElement-1796000007179]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: span
+          ↓TagC [ngx.components.UIAttribute-1796000007180]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:cv-tag cv-tag--soft
+          ↓TagT [ngx.components.UIText-1796000007181]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: source:{"filter":"Iteration","project":"COEsprit_fe","input":"","model":{"data":[{"priority":1796000007178}],"path":"","prefix":"","suffix":"","custom":"","useCustom":false}}
+      ↓IfRest [ngx.components.UIControlDirective-1796000007182]: 
+        directiveName: If
+        directiveSource: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:this.appetencesRest() > 0
+        ↓Rest [ngx.components.UIDynamicElement-1796000007183]: 
+          beanData: '{"ionBean":"DivTag"}'
+          tagName: span
+          ↓RestC [ngx.components.UIAttribute-1796000007184]: 
+            attrName: class
+            attrValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: plain:chip chip--muted
+          ↓RestT [ngx.components.UIText-1796000007185]: 
+            textValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:'+' + this.appetencesRest()
+  ↓Body [ngx.components.UIDynamicElement-1796000007140]: 
+    beanData: '{"ionBean":"DivTag"}'
+    tagName: p
+    ↓BodyC [ngx.components.UIAttribute-1796000007141]: 
+      attrName: class
+      attrValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: plain:profile-card__body
+    ↓BodyT [ngx.components.UIText-1796000007142]: 
+      textValue: 
+        - xmlizable: 
+          - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+          - MobileSmartSourceType: script:this.body()
+  ↓RootClass [ngx.components.UIAttribute-1792502791237]: 
+    attrName: class
+    attrValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: plain:profile-card
+  ↓Event [ngx.components.UIControlEvent-1792502807580]: 
+    ↓EmitEvent [ngx.components.UIDynamicEmit-1792502807583]: 
+      beanData: '{"ionBean":"EmitEventAction","event":"plain:COEsprit_fe.Application.NgxApp.CoeProfileCard.open"}'
+  ↓RootType [ngx.components.UIAttribute-1792502824556]: 
+    attrName: type
+    attrValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: plain:button
+↓Style [ngx.components.UIStyle-1796000007190]: 
+  styleContent: 
+    - xmlizable: 
+      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+        →: |
+          ':host {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+          }
+          :host .profile-card {
+            flex: 1 1 auto;
+          }
+          :host .profile-card .avatar {
+            border-radius: 14px !important;
+            width: 48px !important;
+            height: 48px !important;
+          }
+          :host .profile-card__name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          :host .profile-card__meta {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          :host .profile-card__domaines,
+          :host .profile-card__appetences {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            overflow: hidden;
+          }
+          :host .profile-card__domaines { height: 28px; }
+          :host .profile-card__appetences { height: 32px; }
+          :host .profile-card__appetences .cv-tag {
+            flex: 0 1 auto;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          :host .profile-card__domaines .chip,
+          :host .profile-card__appetences .chip {
+            flex: 0 0 auto;
+            white-space: nowrap;
+          }
+          :host .profile-card__body {
+            margin: 0;
+            min-height: calc(1.45em * 2);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          '
+↓nom [ngx.components.UICompVariable-1796000007150]: 
+↓site [ngx.components.UICompVariable-1796000007151]: 
+↓perimetre [ngx.components.UICompVariable-1796000007152]: 
+↓libellePoste [ngx.components.UICompVariable-1796000007153]: 
+↓activites [ngx.components.UICompVariable-1796000007154]: 
+↓userId [ngx.components.UICompVariable-1796000007155]: 
+↓termeIds [ngx.components.UICompVariable-1796000007157]: 
+↓termeLibelles [ngx.components.UICompVariable-1796000007192]: 
+↓domaineChipsRaw [ngx.components.UICompVariable-1796000007193]: 
+↓photoUrl [ngx.components.UICompVariable-1796000007194]: 
+↓termes [ngx.components.UICompVariable-1796000007158]: 
+↓domaines [ngx.components.UICompVariable-1796000007159]: 
+↓open [ngx.components.UICompEvent-1796000007156]: 
+  attrName: open

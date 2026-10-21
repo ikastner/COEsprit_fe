@@ -1,0 +1,18 @@
+comment: Réinitialise user / isConnected dans sharedObject (logout local).
+↓ResetSession [ngx.components.UICustomAction-1796000001001]: 
+  actionValue: 
+    - xmlizable: 
+      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+        →: |
+          		page.c8o.log.debug("[MB] Auth_ResetSession");
+          		if (page.routerProvider && page.routerProvider.sharedObject) {
+          			page.routerProvider.sharedObject.user = null;
+          			page.routerProvider.sharedObject.isConnected = false;
+          		}
+          		try {
+          			window.sessionStorage.removeItem("coe:userName");
+          			window.sessionStorage.removeItem("coe:userRole");
+          		} catch (e) {}
+          		resolve(true);
+          

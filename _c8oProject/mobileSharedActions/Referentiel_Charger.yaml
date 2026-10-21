@@ -1,0 +1,120 @@
+comment: Charge domaines, termes et listes pour la recherche et la fiche.
+↓Go [ngx.components.UICustomAction-1796000009331]: 
+  actionValue: 
+    - xmlizable: 
+      - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+      - com.twinsoft.convertigo.beans.common.FormatedContent: 
+        →: |
+          'var pg = page;
+          function isIndex(k) {
+            if (!k) return false;
+            var i = 0;
+            for (i = 0; i < k.length; i++) {
+              var n = k.charCodeAt(i);
+              if (n < 48 || n > 57) return false;
+            }
+            return k.length > 0;
+          }
+          function rows(x) {
+            if (!x) return null;
+            if (Array.isArray(x)) return x;
+            if (x.row != null) {
+              var r = x.row;
+              return Array.isArray(r) ? r : [r];
+            }
+            if (typeof x === "object") {
+              var keys = Object.keys(x).filter(isIndex);
+              if (keys.length) {
+                keys.sort(function (a, b) { return (+a) - (+b); });
+                var out = [];
+                var i = 0;
+                for (i = 0; i < keys.length; i++) out.push(x[keys[i]]);
+                return out;
+              }
+            }
+            return null;
+          }
+          function bagOf(node) {
+            if (!node || typeof node !== "object") return null;
+            return rows(node.sql_output) || (node.document ? rows(node.document.sql_output) : null);
+          }
+          function kind(list) {
+            var r = list && list[0];
+            if (!r || typeof r !== "object") return "";
+            if (r.liste != null && r.valeur != null && r.statut == null) return "liste";
+            if (r.terme_id != null || r.statut != null) return "terme";
+            if (r.libelle != null || r.domaine_id != null || r.tone != null) return "domaine";
+            return "";
+          }
+          function labelOf(node) {
+            if (!node || typeof node !== "object") return "";
+            var a = node.attr || {};
+            var d = node.document && typeof node.document === "object" && !Array.isArray(node.document) ? node.document : null;
+            var da = d && d.attr ? d.attr : {};
+            return String(a.transaction || da.transaction || "");
+          }
+          function appliquer(res) {
+            var root = res && (res.document || res) || {};
+            var found = { domaines: [], termes: [], listes: [] };
+            function take(node, depth) {
+              if (!node || depth > 8) return;
+              if (Array.isArray(node)) {
+                var i = 0;
+                for (i = 0; i < node.length; i++) take(node[i], depth + 1);
+                return;
+              }
+              if (typeof node !== "object") return;
+              var got = bagOf(node);
+              var label = labelOf(node);
+              var slot = "";
+              if (label.indexOf("Listes") >= 0) slot = "listes";
+              else if (label.indexOf("Termes") >= 0) slot = "termes";
+              else if (label.indexOf("Domaines") >= 0) slot = "domaines";
+              else if (got && got.length) {
+                var knd = kind(got);
+                if (knd === "liste") slot = "listes";
+                else if (knd === "terme") slot = "termes";
+                else if (knd === "domaine") slot = "domaines";
+              }
+              if (slot && got && got.length && !found[slot].length) found[slot] = got;
+              if (slot) return;
+              var keys = Object.keys(node);
+              var j = 0;
+              for (j = 0; j < keys.length; j++) {
+                if (keys[j] === "attr" || keys[j] === "sql_output") continue;
+                take(node[keys[j]], depth + 1);
+              }
+            }
+            take(root, 0);
+            var domaines = found.domaines.map(function (r) {
+              if (!r || typeof r !== "object") return null;
+              var id = String(r.id || r.domaine_id || "");
+              if (!id) return null;
+              return { id: id, domaine_id: String(r.domaine_id || id), libelle: String(r.libelle || id), tone: String(r.tone || "sky") };
+            }).filter(Boolean);
+            var termes = found.termes.map(function (r) {
+              if (!r || typeof r !== "object") return null;
+              var id = String(r.id || r.terme_id || "");
+              if (!id) return null;
+              return { id: id, terme_id: String(r.terme_id || id), libelle: String(r.libelle || id), domaine_id: String(r.domaine_id || ""), statut: String(r.statut || ""), icon: String(r.icon || "") };
+            }).filter(Boolean);
+            var listes = found.listes.filter(function (r) {
+              return r && r.liste != null && r.valeur != null;
+            }).map(function (r) {
+              return { liste: String(r.liste), valeur: String(r.valeur) };
+            });
+            if (!pg.local) pg.local = {};
+            pg.local.domaines = domaines;
+            pg.local.termes = termes;
+            pg.local.listes = listes;
+            if (!pg.global) pg.global = {};
+            pg.global.coeDomaines = domaines;
+            pg.global.coeTermes = termes;
+            pg.global.coeListes = listes;
+            try { if (pg.ref) pg.ref.detectChanges(); } catch (e0) {}
+          }
+          var req = pg.c8o.callJsonObject("COEsprit_be.Referentiel_Lire", {});
+          Promise.resolve(req).then(function (res) {
+            try { appliquer(res); } catch (e1) {}
+            resolve(true);
+          }).catch(function () { resolve(true); });'

@@ -1,0 +1,11 @@
+comment: Invoke lib_common_fe.CheckUserSession — redirect Login si session absente.
+↓pageNameLogin [ngx.components.UIStackVariable-1796000000701]: 
+  value: '''Login'''
+↓InvokeCheck [ngx.components.UIDynamicInvoke-1796000000710]: 
+  beanData: '{"ionBean":"InvokeAction"}'
+  stack: lib_common_fe.Application.NgxApp.CheckUserSession
+  ↓pageNameLogin [ngx.components.UIControlVariable-1796000000711]: 
+    varValue: 
+      - xmlizable: 
+        - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+        - MobileSmartSourceType: script:vars.pageNameLogin || 'Login'

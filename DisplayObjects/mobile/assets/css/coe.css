@@ -1,0 +1,23 @@
+@import url("./tokens.css");
+@import url("./base.css");
+@import url("./components.css");
+@import url("./ionic-grid.css");
+@import url("./screens.css");
+
+/* Shell Convertigo: contenu à droite de la sidebar */
+ion-content.coe-page,
+ion-content.pfc-page {
+  --background: var(--c-page, #F4F7FB);
+  --padding-start: calc(var(--pfa-side, 280px) + 1.25rem) !important;
+  --padding-end: 1.25rem;
+  --padding-top: 1.25rem;
+  --padding-bottom: 2rem;
+}
+
+/* Le bandeau est collé au haut et aux côtés, comme sur la maquette. */
+ion-content.coe-page .topbar,
+ion-content.pfc-page .topbar {
+  margin-top: -1.25rem;
+  margin-left: -1.25rem;
+  margin-right: -1.25rem;
+}
