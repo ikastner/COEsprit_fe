@@ -41,7 +41,10 @@ scriptContent:
         /*End_c8o_PageInitialization*/
         /*Begin_c8o_PageFunction*/
         	NavigateRecherche() {
-        		return this.routerProvider.navigateRoot("Recherche", false, null);
+        		var u: any = (this.global && this.global.user) || {};
+        		var admin = String(u.roleSession || "") === "admin" || u.role === "admin" || (Array.isArray(u.role) && u.role.indexOf("admin") >= 0);
+        		var communaute = String(u.idCommunaute || u.id_communaute || "");
+        		return this.routerProvider.navigateRoot(admin && !communaute ? "Admin" : "Recherche", false, null);
         	}
         /*End_c8o_PageFunction*/
         '
@@ -120,13 +123,13 @@ title: Connexion
             beanData: '{"ionBean":"ToastAction","message":"script:String(stack[''1796000005111'']?.out?.error?.message || stack[''1796000005111'']?.out?.document?.error?.message || ''Connexion refusée.'')"}'
           ↓Else_Handler [ngx.components.UIActionElseEvent-1796000005123]: 
             ↓IfElse_User [ngx.components.UIDynamicIf-1796000005130]: 
-              beanData: '{"ionBean":"IfElseAction","condition":"script:(function(o){ var u=o&&(o.user||(o.document&&o.document.user)); return !!(u&&u.codeAgent); })(stack[''1796000005111'']?.out)"}'
+              beanData: '{"ionBean":"IfElseAction","condition":"script:(function(o){ function pick(x){ if(!x) return null; var a=[]; if(x.user) a.push(x.user); if(x.document&&x.document.user) a.push(x.document.user); var i; for(i=0;i<a.length;i++){ if(a[i]&&(a[i].roleSession||a[i].role_session)) return a[i]; } return a[0]||null; } var u=pick(o); return !!(u&&u.codeAgent); })(stack[''1796000005111'']?.out)"}'
               ↓user [ngx.components.UIDynamicAction-1796000005131]: 
                 beanData: |
                   '{
                    "ionBean": "SetGlobalAction",
                    "Property": "plain:user",
-                   "Value": "script:(function(o){ var u=o&&(o.user||(o.document&&o.document.user)); if(u&&u.role!=null&&!Array.isArray(u.role)) u.role=[u.role]; return u; })(stack[''1796000005111'']?.out)"
+                   "Value": "script:(function(o){ function pick(x){ if(!x) return null; var a=[]; if(x.user) a.push(x.user); if(x.document&&x.document.user) a.push(x.document.user); var i; for(i=0;i<a.length;i++){ if(a[i]&&(a[i].roleSession||a[i].role_session)) return a[i]; } return a[0]||null; } var u=pick(o); if(u&&u.role!=null&&!Array.isArray(u.role)) u.role=[u.role]; return u; })(stack[''1796000005111'']?.out)"
                   }'
                 ↓isConnected [ngx.components.UIDynamicAction-1796000005132]: 
                   beanData: |

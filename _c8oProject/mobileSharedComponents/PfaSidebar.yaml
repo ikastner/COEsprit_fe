@@ -167,11 +167,20 @@ scriptContent:
         		var codeU = String(u.codeAgent || "");
         		var codeC = String(c.codeAgent || "");
         		var meme = !codeU || !codeC || codeU.toUpperCase() === codeC.toUpperCase();
+        		var roles = u.role;
+        		var roleAdmin = roles === "admin" || (Array.isArray(roles) && roles.indexOf("admin") >= 0);
+        		var session = String(u.roleSession || (meme ? c.roleSession : "") || "");
+        		if (!session && roleAdmin) session = "admin";
         		return {
-        			roleSession: String(u.roleSession || (meme ? c.roleSession : "") || ""),
+        			roleSession: session,
         			roleLocal: String(u.roleLocal || (meme ? c.roleLocal : "") || ""),
-        			piloteCommunaute: meme ? (oui(u.piloteCommunaute) || oui(c.piloteCommunaute)) : oui(u.piloteCommunaute)
+        			piloteCommunaute: meme ? (oui(u.piloteCommunaute) || oui(c.piloteCommunaute)) : oui(u.piloteCommunaute),
+        			idCommunaute: String((meme ? (u.idCommunaute || c.idCommunaute) : u.idCommunaute) || "")
         		};
+        	}
+        	montreEspace() {
+        		var d = this.drapeaux();
+        		return d.roleSession !== "admin" || !!d.idCommunaute;
         	}
         	libelleRole() {
         		var d = this.drapeaux();
@@ -198,6 +207,7 @@ scriptContent:
         		var local = String(f.role_local || f.roleLocal || g.user.roleLocal || "");
         		g.user.roleSession = session;
         		g.user.roleLocal = local;
+        		g.user.idCommunaute = String(f.id_communaute || f.idCommunaute || "");
         		if (f.pilote_communaute != null || f.piloteCommunaute != null) {
         			g.user.piloteCommunaute = oui(f.pilote_communaute != null ? f.pilote_communaute : f.piloteCommunaute);
         		}
@@ -393,6 +403,12 @@ scriptContent:
           - xmlizable: 
             - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
             - MobileSmartSourceType: plain:nav-btn
+      ↓BtnDashH [ngx.components.UIAttribute-1792355042793]: 
+        attrName: '[hidden]'
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:!this.montreEspace()
       ↓BtnDashOn [ngx.components.UIAttribute-1792355042795]: 
         attrName: '[class.is-active]'
         attrValue: 
@@ -440,6 +456,12 @@ scriptContent:
           - xmlizable: 
             - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
             - MobileSmartSourceType: plain:nav-btn
+      ↓BtnGrilleH [ngx.components.UIAttribute-1792355042823]: 
+        attrName: '[hidden]'
+        attrValue: 
+          - xmlizable: 
+            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+            - MobileSmartSourceType: script:!this.montreEspace()
       ↓BtnGrilleOn [ngx.components.UIAttribute-1792355042825]: 
         attrName: '[class.is-active]'
         attrValue: 

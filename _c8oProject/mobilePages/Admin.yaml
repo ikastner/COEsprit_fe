@@ -476,7 +476,7 @@ scriptContent:
         		for (i = 0; i < pilots.length; i++) if (self.oui(pilots[i].pilote_communaute)) deja[String(pilots[i].code_agent || "").toUpperCase()] = true;
         		var list = (this.local && this.local.agents) || [];
         		return list.filter(function (a) { return a && !deja[String(a.code_agent || "").toUpperCase()]; }).map(function (a) {
-        			return { label: String(a.nom || "") + " · " + String(a.mail || "") + " · " + String(a.code_agent || ""), value: String(a.code_agent || "") };
+        			return { label: self.libelleAgent(a), cherche: self.libelleAgent(a) + " " + String(a.code_agent || "") + " " + String(a.mail || ""), value: String(a.code_agent || "") };
         		});
         	}
         	membreCommunaute(code, id) {
@@ -580,15 +580,31 @@ scriptContent:
         		return this.drawerMode === "edit" ? "Modifier un membre" : "Ajouter un membre";
         	}
         	fermerDrawer() { this.drawer = false; this.membreEdition = null; this.drawerMode = "add"; }
-        	chercherAgents() {
+        	libelleAgent(a) {
+        		var nom = String((a && a.nom) || "").replace(/^\s+|\s+$/g, "");
+        		var prenom = String((a && a.prenom) || "").replace(/^\s+|\s+$/g, "");
+        		return (nom + " " + prenom).replace(/^\s+|\s+$/g, "");
+        	}
+        	chercherAgents(q) {
         		var self: any = this;
-        		var p: any = self.c8o.callJsonObject("COEsprit_be.Agent_Chercher", { q: "" });
-        		p.then(function (res) {
-        			var doc = (res && res.document) ? res.document : (res || {});
-        			self.local.agents = self.rowsOf(doc, "Lire_agents");
-        			try { self.ref.detectChanges(); } catch (e) {}
-        			return null;
-        		});
+        		var texte = q;
+        		if (q && typeof q === "object") texte = q.filter || (q.event && q.event.filter) || "";
+        		texte = String(texte == null ? "" : texte).replace(/^\s+|\s+$/g, "");
+        		if (self._agentTimer) clearTimeout(self._agentTimer);
+        		if (texte.length < 2) {
+        			self.local.agents = [];
+        			try { self.ref.detectChanges(); } catch (e0) {}
+        			return;
+        		}
+        		self._agentTimer = setTimeout(function () {
+        			var p: any = self.c8o.callJsonObject("COEsprit_be.Agent_Chercher", { q: texte });
+        			p.then(function (res) {
+        				var doc = (res && res.document) ? res.document : (res || {});
+        				self.local.agents = self.rowsOf(doc, "Lire_agents");
+        				try { self.ref.detectChanges(); } catch (e) {}
+        				return null;
+        			});
+        		}, 250);
         	}
         	agentCourant() {
         		var id = String(this.agentCode || "");
@@ -601,7 +617,7 @@ scriptContent:
         		var list = (this.local && this.local.agents) || [];
         		var self = this;
         		return list.filter(function (a) { return !self.oui(a.deja_membre); }).map(function (a) {
-        			return { label: String(a.nom || "") + " · " + String(a.mail || "") + " · " + String(a.code_agent || ""), value: String(a.code_agent || "") };
+        			return { label: self.libelleAgent(a), cherche: self.libelleAgent(a) + " " + String(a.code_agent || "") + " " + String(a.mail || ""), value: String(a.code_agent || "") };
         		});
         	}
         	agentConsultation() {
@@ -1924,6 +1940,11 @@ title: Admin
                           - xmlizable: 
                             - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
                             - MobileSmartSourceType: script:'label'
+                      ↓filterBy [ngx.components.UIUseVariable-1796000014628]: 
+                        varValue: 
+                          - xmlizable: 
+                            - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                            - MobileSmartSourceType: script:'cherche'
                       ↓optionValue [ngx.components.UIUseVariable-1796000014613]: 
                         varValue: 
                           - xmlizable: 
@@ -1950,6 +1971,17 @@ title: Admin
                           - xmlizable: 
                             - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
                             - MobileSmartSourceType: script:false
+                      ↓onFilter [ngx.components.UIControlEvent-1796000014618]: 
+                        attrName: (onFilter)
+                        eventName: onFilter
+                        ↓Do1796000014619 [ngx.components.UICustomAction-1796000014619]: 
+                          actionValue: 
+                            - xmlizable: 
+                              - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                              - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                                →: |
+                                  page.chercherAgents(event);
+                                  resolve(true);
                     ↓IfPeri [ngx.components.UIControlDirective-1796000014650]: 
                       directiveName: If
                       directiveSource: 
@@ -2813,6 +2845,11 @@ title: Admin
               - xmlizable: 
                 - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
                 - MobileSmartSourceType: script:'label'
+          ↓filterBy [ngx.components.UIUseVariable-17960000094495]: 
+            varValue: 
+              - xmlizable: 
+                - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
+                - MobileSmartSourceType: script:'cherche'
           ↓optionValue [ngx.components.UIUseVariable-17960000094488]: 
             varValue: 
               - xmlizable: 
@@ -2839,6 +2876,17 @@ title: Admin
               - xmlizable: 
                 - ↑classname: com.twinsoft.convertigo.beans.ngx.components.MobileSmartSourceType
                 - MobileSmartSourceType: script:false
+          ↓onFilter [ngx.components.UIControlEvent-17960000094493]: 
+            attrName: (onFilter)
+            eventName: onFilter
+            ↓Do17960000094494 [ngx.components.UICustomAction-17960000094494]: 
+              actionValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                  - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                    →: |
+                      page.chercherAgents(event);
+                      resolve(true);
       ↓E1796000014340 [ngx.components.UIDynamicElement-1796000014340]: 
         beanData: '{"ionBean":"DivTag"}'
         tagName: dl
