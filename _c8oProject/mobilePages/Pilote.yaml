@@ -772,15 +772,13 @@ scriptContent:
         		var a = this.agentCourant();
         		if (!a) return true;
         		if (this.oui(a.deja_membre)) return true;
-        		if (!this.oui(a.a_mapping)) return true;
-        		return !String(a.libelle_service || "").trim();
+        		return false;
         	}
         	agentHint() {
         		if (this.drawerMode === "edit") return "";
         		var a = this.agentCourant();
         		if (!a) return "";
         		if (this.oui(a.deja_membre)) return "Cette personne a déjà une appartenance active";
-        		if (!this.oui(a.a_mapping) || !String(a.libelle_service || "").trim()) return "Ajout bloqué : pas de LibelleService";
         		return "";
         	}
         	roleActions() {
