@@ -585,7 +585,7 @@ scriptContent:
         		var prenom = String((a && a.prenom) || "").replace(/^\s+|\s+$/g, "");
         		return (nom + " " + prenom).replace(/^\s+|\s+$/g, "");
         	}
-        	chercherAgents(q) {
+        	chercherAgents(q?) {
         		var self: any = this;
         		var texte = q;
         		if (q && typeof q === "object") texte = q.filter || (q.event && q.event.filter) || "";
