@@ -15,6 +15,7 @@ scriptContent:
         	drawerMode: string;
         	membreEdition: any;
         	agentCode: string;
+        	_agentChoisi: any;
         	roleAjout: string;
         	nomCommunaute: string;
         	nomPerimetre: string;
@@ -46,6 +47,7 @@ scriptContent:
         		this.drawerMode = "add";
         		this.membreEdition = null;
         		this.agentCode = "";
+        		this._agentChoisi = null;
         		this.roleAjout = "membre";
         		this.nomCommunaute = "";
         		this.nomPerimetre = "";
@@ -472,18 +474,48 @@ scriptContent:
         		var deja = {};
         		var pilots = this.membresDu(id, "id_communaute");
         		var i = 0;
-        		var self = this;
+        		var self: any = this;
         		for (i = 0; i < pilots.length; i++) if (self.oui(pilots[i].pilote_communaute)) deja[String(pilots[i].code_agent || "").toUpperCase()] = true;
         		var list = (this.local && this.local.agents) || [];
-        		return list.filter(function (a) { return a && !deja[String(a.code_agent || "").toUpperCase()]; }).map(function (a) {
+        		var opts = list.filter(function (a) { return a && !deja[String(a.code_agent || "").toUpperCase()]; }).map(function (a) {
         			return { label: self.libelleAgent(a), cherche: self.libelleAgent(a) + " " + String(a.code_agent || "") + " " + String(a.mail || ""), value: String(a.code_agent || "") };
         		});
+        		var code = String(this.piloteCandidat || "");
+        		if (code) {
+        			var present = false;
+        			for (i = 0; i < opts.length; i++) if (String(opts[i].value) === code) present = true;
+        			if (!present) {
+        				var a0 = null;
+        				for (i = 0; i < list.length; i++) if (String(list[i].code_agent || "") === code) a0 = list[i];
+        				opts.unshift({ label: a0 ? self.libelleAgent(a0) : code, cherche: code, value: code });
+        			}
+        		}
+        		return opts;
         	}
         	membreCommunaute(code, id) {
         		var rows = this.membresDu(id, "id_communaute");
         		var i = 0;
         		for (i = 0; i < rows.length; i++) if (String(rows[i].code_agent || "").toUpperCase() === String(code || "").toUpperCase()) return rows[i];
         		return null;
+        	}
+        	valeurSelect(event) {
+        		var v = event;
+        		var guard = 0;
+        		while (v && typeof v === "object" && guard < 6) {
+        			if (v.value !== undefined && (typeof v.value === "string" || typeof v.value === "number")) return String(v.value);
+        			if (v.event) { v = v.event; guard++; continue; }
+        			if (v.originalEvent && v.value === undefined) { v = v.originalEvent; guard++; continue; }
+        			break;
+        		}
+        		return v == null ? "" : String(v);
+        	}
+        	choisirPiloteCandidat(event) {
+        		this.piloteCandidat = this.valeurSelect(event);
+        		if (this.besoinPerimetre() && !String(this.perimetrePilote || "")) {
+        			var peris = this.perimetresPilote();
+        			if (peris.length) this.perimetrePilote = String(peris[0].value || "");
+        		}
+        		try { this.ref.detectChanges(); } catch (e) {}
         	}
         	besoinPerimetre() {
         		var n = this.noeud();
@@ -606,8 +638,19 @@ scriptContent:
         			});
         		}, 250);
         	}
+        	choisirAgent(event) {
+        		this.agentCode = this.valeurSelect(event);
+        		var a = null;
+        		var list = (this.local && this.local.agents) || [];
+        		var i = 0;
+        		for (i = 0; i < list.length; i++) if (String(list[i].code_agent) === String(this.agentCode || "")) a = list[i];
+        		this._agentChoisi = a;
+        		try { this.ref.detectChanges(); } catch (e) {}
+        	}
         	agentCourant() {
         		var id = String(this.agentCode || "");
+        		if (!id) return null;
+        		if (this._agentChoisi && String(this._agentChoisi.code_agent) === id) return this._agentChoisi;
         		var list = (this.local && this.local.agents) || [];
         		var i = 0;
         		for (i = 0; i < list.length; i++) if (String(list[i].code_agent) === id) return list[i];
@@ -615,10 +658,21 @@ scriptContent:
         	}
         	agentOptions() {
         		var list = (this.local && this.local.agents) || [];
-        		var self = this;
-        		return list.filter(function (a) { return !self.oui(a.deja_membre); }).map(function (a) {
+        		var self: any = this;
+        		var opts = list.filter(function (a) { return !self.oui(a.deja_membre); }).map(function (a) {
         			return { label: self.libelleAgent(a), cherche: self.libelleAgent(a) + " " + String(a.code_agent || "") + " " + String(a.mail || ""), value: String(a.code_agent || "") };
         		});
+        		var code = String(this.agentCode || "");
+        		if (code) {
+        			var present = false;
+        			var i = 0;
+        			for (i = 0; i < opts.length; i++) if (String(opts[i].value) === code) present = true;
+        			if (!present) {
+        				var a0 = this.agentCourant();
+        				opts.unshift({ label: a0 ? self.libelleAgent(a0) : code, cherche: code, value: code });
+        			}
+        		}
+        		return opts;
         	}
         	agentConsultation() {
         		var m = this.membreEdition;
@@ -1982,6 +2036,17 @@ title: Admin
                                 →: |
                                   page.chercherAgents(event);
                                   resolve(true);
+                      ↓onChange [ngx.components.UIControlEvent-1796000014660]: 
+                        attrName: (onChange)
+                        eventName: onChange
+                        ↓Do1796000014661 [ngx.components.UICustomAction-1796000014661]: 
+                          actionValue: 
+                            - xmlizable: 
+                              - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                              - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                                →: |
+                                  page.choisirPiloteCandidat(event);
+                                  resolve(true);
                     ↓IfPeri [ngx.components.UIControlDirective-1796000014650]: 
                       directiveName: If
                       directiveSource: 
@@ -2886,6 +2951,17 @@ title: Admin
                   - com.twinsoft.convertigo.beans.common.FormatedContent: 
                     →: |
                       page.chercherAgents(event);
+                      resolve(true);
+          ↓onChange [ngx.components.UIControlEvent-17960000094496]: 
+            attrName: (onChange)
+            eventName: onChange
+            ↓Do17960000094497 [ngx.components.UICustomAction-17960000094497]: 
+              actionValue: 
+                - xmlizable: 
+                  - ↑classname: com.twinsoft.convertigo.beans.common.FormatedContent
+                  - com.twinsoft.convertigo.beans.common.FormatedContent: 
+                    →: |
+                      page.choisirAgent(event);
                       resolve(true);
       ↓E1796000014340 [ngx.components.UIDynamicElement-1796000014340]: 
         beanData: '{"ionBean":"DivTag"}'
